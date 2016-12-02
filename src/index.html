@@ -137,10 +137,14 @@
         }
         document.getElementById('result').className = 'generated';
     }
+    var extractDomain = new SPH_DomainExtractor().extractDomain
     function init() {
         var domainField = document.getElementById('domain');
         if (navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPod/i)) {
             domainField.type = 'url';
+        }
+        if (location.hash) {
+            domainField.value = extractDomain(location.hash.slice(1));
         }
         if (domainField.value == '') {
             domainField.focus();
