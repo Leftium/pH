@@ -138,7 +138,15 @@
         document.getElementById('result').className = 'generated';
     }
     var extractDomain = new SPH_DomainExtractor().extractDomain
+    if (!window.location.origin) {
+        window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
+    }
     function init() {
+        var bookmarkletScript = "javascript:q=location.href;window.open('ORIGIN/#'+q,'_blank');"
+        bookmarkletScript = bookmarkletScript.replace(/ORIGIN/, location.origin);
+        var bookmarklet = document.getElementById('bookmarklet');
+        bookmarklet.href = bookmarkletScript;
+
         var domainField = document.getElementById('domain');
         if (navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPod/i)) {
             domainField.type = 'url';
@@ -194,7 +202,7 @@
         </fieldset>
     </form>
 
-    <p id="footer"><span>Based on <a href="http://alexking.org/pw">alexking.org/pw</a>.</span>Copyright &copy; 2016 <a href="http://leftium.com">John-Kim Murphy</a>.</p>
+    <p id="footer"><span>Based on <a href="http://alexking.org/pw">alexking.org/pw</a>.</span>Bookmarklet: <a id="bookmarklet" href='#'>pH</a></p>
 
 </div>
 
