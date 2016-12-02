@@ -1,0 +1,198 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>pH | leftium.com</title>
+	<link rel="apple-touch-icon-precomposed" href="images/apple-touch-icon.png">
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+	<meta name="viewport" content="initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
+	<style type="text/css">
+
+	body {
+		background: #fff url(images/page_back.png) repeat-x;
+		font: 12px Verdana, Arial, sans-serif;
+		margin: 0;
+		padding: 0;
+		text-align: center;
+	}
+	#page {
+		background: #fff;
+		border: 1px solid #ABB9E3;
+		border-width: 5px 1px 2px 1px;
+		margin: 30px auto;
+		text-align: left;
+		width: 400px;
+	}
+	label {
+		display: block;
+		float: left;
+		padding: 5px;
+		text-align: right;
+		width: 140px;
+	}
+	input {
+		border: 1px solid #999;
+		font: 11px Verdana, Arial, sans-serif;
+		padding: 5px;
+	}
+	input.text {
+		width: 150px;
+	}
+	#submitButton {
+		margin-left: 150px;
+	}
+
+	h1 {
+		border-bottom: 1px solid #D3D3F7;
+		color: #333;
+		font: bold 14px "Lucida Sans Unicode", "Lucida Grande", "Trebuchet MS", sans-serif;
+		margin: 0 0 30px 0;
+		padding: 10px;
+	}
+	p {
+		margin: 10px 0 10px 0;
+		padding: 0;
+	}
+	fieldset {
+		border: 0;
+		margin: 0;
+		padding: 0;
+	}
+	#submitButton {
+		background: #eee url(images/button_back.png) repeat-x;
+		font-size: 12px;
+		font-weight: bold;
+	}
+	#result {
+		background: #eee;
+		margin: 20px 0;
+		padding: 20px 0;
+		text-align: center;
+	}
+	#result label {
+		display: none;
+	}
+	#result input {
+		background: #eee;
+		border: 0;
+		font-family: "Courier New", Courier, mono;
+		font-size: 20px;
+		font-weight: bold;
+		text-align: center;
+		width: 200px;
+		visibility: hidden;
+	}
+	#result.generated {
+		background: #ffc;
+	}
+	#result.generated input {
+		background: #fff;
+		border: 1px solid #999;
+	}
+	#bookmarklet {
+		margin: 0;
+		padding: 20px 0;
+		text-align: center;
+	}
+	#footer {
+		background: #EAEAFC;
+		border-top: 1px solid #D3D3F7;
+		color: #555;
+		font-size: 10px;
+		padding: 10px;
+		margin: 0;
+	}
+	#footer span {
+		float: right;
+	}
+	#footer a, #footer a:visited {
+		color: #444;
+	}
+	div.clear {
+		clear: both;
+		float: none;
+	}
+	</style>
+	<script type="text/javascript" src="lib/domain-extractor.js"></script>
+	<script type="text/javascript" src="lib/hashed-password.js"></script>
+	<script type="text/javascript" src="lib/md5.js"></script>
+	<script type="text/javascript" src="lib/pwdhash.js"></script>
+
+	<script type="text/javascript">
+	function pw() {
+		GenerateToTextField();
+		var resultField = document.getElementById('hashedPassword');
+		resultField.style.visibility = 'visible';
+		resultField.focus();
+		if (document.selection) {
+			var sel = document.selection.createRange();
+			sel.move(0, resultField.value.length);
+			sel.select();
+		}
+		else {
+			resultField.selectionStart = 0;
+			resultField.selectionEnd = resultField.value.length;
+		}
+		document.getElementById('result').className = 'generated';
+	}
+	function init() {
+		var domainField = document.getElementById('domain');
+		if (navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPod/i)) {
+			domainField.type = 'url';
+		}
+		if (domainField.value == '') {
+			domainField.focus();
+		}
+		else {
+			document.getElementById('sitePassword').focus();
+		}
+	}
+	function startOver() {
+		document.getElementById('result').className = '';
+		var resultField = document.getElementById('hashedPassword');
+		resultField.value = '';
+		resultField.style.visibility = 'hidden';
+	}
+	function domainToLower() {
+		var domainField = document.getElementById('domain');
+		domainField.value = domainField.value.toLowerCase();
+	}
+	</script>
+</head>
+<body onload="init();">
+
+<div id="page">
+
+	<h1>Password Generator</h1>
+	<form name="hashform" action="index.php" onsubmit="domainToLower(); setTimeout('pw()', 0); return false;" autocomplete="off">
+		<fieldset>
+			<p>
+				<label for="domain">Domain</label>
+				<input type="text" name="domain" id="domain" value="" class="text" />
+			</p>
+			<div class="clear"></div>
+			<p>
+				<label for="sitePassword">Password</label>
+				<input type="password" name="sitePassword" id="sitePassword" value="" onkeydown="startOver();" class="text" />
+			</p>
+			<div class="clear"></div>
+			<p>
+				<input type="submit" name="submitButton" id="submitButton" value="Generate" />
+			</p>
+			<p id="result">
+				<label for="hashedPassword">Result</label>
+				<input type="text" name="hashedPassword" id="hashedPassword" />
+			</p>
+			<div class="clear"></div>
+			
+		</fieldset>
+	</form>
+
+	<p id="footer"><span>Based on <a href="http://alexking.org/pw">alexking.org/pw</a>.</span>Copyright &copy; 2016 <a href="http://leftium.com">John-Kim Murphy</a>.</p>
+
+</div>
+
+</body>
+</html>
