@@ -84,11 +84,15 @@ fieldset {
     padding: 0;
 }
 #submitButton {
+    display:none;
     background: #eee url(images/button_back.png) repeat-x;
     font-size: 12px;
     font-weight: bold;
 }
 #result {
+    position:absolute;
+    left:0; top:-1000px;
+
     background: #eee;
     margin: 20px 0;
     padding: 20px 0;
