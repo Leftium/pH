@@ -23,7 +23,7 @@
 <div id="page">
 
     <h1>Password Generator</h1>
-    <form name="hashform" action="index.php" onsubmit="domainToLower(); setTimeout('pw()', 0); return false;" autocomplete="off">
+    <form name="hashform" autocomplete="off">
         <fieldset>
             <p>
                 <label for="domain">Domain</label>
@@ -37,7 +37,7 @@
             <div class="clear"></div>
             <p>
                 <label for="sitePassword">Password</label>
-                <input type="password" name="sitePassword" id="sitePassword" value="" oninput="domainToLower(); setTimeout('pw()', 0);" class="text" />
+                <input type="password" name="sitePassword" id="sitePassword" value="" class="text" />
             </p>
             <div class="clear"></div>
             <p>
