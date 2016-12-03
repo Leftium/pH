@@ -30,19 +30,19 @@
                 <input type="text" name="domain" id="domain" value="" class="text" />
             </p>
             <div class="clear"></div>
-            <p>
-                <label for="sitePassword">Password</label>
-                <input type="password" name="sitePassword" id="sitePassword" value="" onkeydown="domainToLower(); setTimeout('pw()', 0);" class="text" />
-            </p>
-            <div class="clear"></div>
-            <p>
-                <input type="submit" name="submitButton" id="submitButton" value="Generate" />
-            </p>
             <p id="result">
                 <label for="hashedPassword">Result</label>
                 <input type="text" name="hashedPassword" id="hashedPassword" />
             </p>
             <div class="clear"></div>
+            <p>
+                <label for="sitePassword">Password</label>
+                <input type="password" name="sitePassword" id="sitePassword" value="" oninput="domainToLower(); setTimeout('pw()', 0);" class="text" />
+            </p>
+            <div class="clear"></div>
+            <p>
+                <input type="submit" name="submitButton" id="submitButton" value="Generate" />
+            </p>
 
         </fieldset>
     </form>
