@@ -102,12 +102,12 @@ function init() {
 
     hashedPasswordField = document.getElementById('hashedPassword');
     hashedPasswordField.onfocus = function() {
-        this.value = this.trueValue;
+        this.value = this.trueValue || '';
         select(this);
     }
 
     hashedPasswordField.onblur = function() {
-        this.value = this.maskValue;
+        this.value = this.maskValue || '';
     }
 
     var domainField = document.getElementById('domain');
