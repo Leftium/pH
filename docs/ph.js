@@ -4,6 +4,8 @@ function copytext(text) {
     textField.innerText = text;
     document.body.appendChild(textField);
 
+    textField.select();
+    /*
     if (document.selection) {
         var sel = document.selection.createRange();
         sel.move(0, textField.value.length);
@@ -13,9 +15,10 @@ function copytext(text) {
         textField.selectionStart = 0;
         textField.selectionEnd = resultField.value.length;
     }
+    /**/
 
     success = document.execCommand('copy');
-    document.body.removeChild(textField);
+    textField.remove();
     return success;
 }
 
@@ -26,12 +29,11 @@ pw = function() {
     e = arguments[0];
     GenerateToTextField();
     var resultField = document.getElementById('hashedPassword');
-    resultField.style.visibility = 'visible';
-    resultField.focus();
-
 
     var success = copytext(resultField.value);
     /*
+    // resultField.style.visibility = 'visible';
+    // resultField.focus();
     if (document.selection) {
         var sel = document.selection.createRange();
         sel.move(0, resultField.value.length);
