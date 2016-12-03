@@ -1,5 +1,5 @@
 function copytext(text) {
-    var  = document.createElement('textarea');
+    var textField = document.createElement('textarea');
     var success = false;
     textField.innerText = text;
     document.body.appendChild(textField);
