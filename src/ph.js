@@ -12,6 +12,8 @@ function pw() {
         resultField.selectionStart = 0;
         resultField.selectionEnd = resultField.value.length;
     }
+    document.execCommand('copy');
+    document.getElementById('sitePassword').focus();
     document.getElementById('result').className = 'generated';
 }
 var extractDomain = new SPH_DomainExtractor().extractDomain
