@@ -4,8 +4,8 @@ function copytext(text) {
     textField.innerText = text;
     document.body.appendChild(textField);
 
-    textField.select();
-    /*
+    // textField.select();
+    /**/
     if (document.selection) {
         var sel = document.selection.createRange();
         sel.move(0, textField.value.length);
@@ -13,11 +13,12 @@ function copytext(text) {
     }
     else {
         textField.selectionStart = 0;
-        textField.selectionEnd = resultField.value.length;
+        textField.selectionEnd = text.length;
     }
     /**/
 
     success = document.execCommand('copy');
+    document.body.removeChild(textField);
     textField.remove();
     return success;
 }
@@ -71,7 +72,7 @@ function init() {
     bookmarklet.href = bookmarkletScript;
 
     sitePasswordField = document.getElementById('sitePassword');
-    sitePasswordField.style.backgroundColor = 'cyan';
+    sitePasswordField.style.backgroundColor = 'yellow';
     sitePasswordField.onkeyup = pw;
 
     var domainField = document.getElementById('domain');
