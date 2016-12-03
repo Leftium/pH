@@ -1,4 +1,4 @@
-function pw() {
+pw = debounce(function() {
     GenerateToTextField();
     var resultField = document.getElementById('hashedPassword');
     resultField.style.visibility = 'visible';
@@ -15,7 +15,7 @@ function pw() {
     document.execCommand('copy');
     document.getElementById('sitePassword').focus();
     document.getElementById('result').className = 'generated';
-}
+}, 500);
 var extractDomain = new SPH_DomainExtractor().extractDomain
 if (!window.location.origin) {
     window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
@@ -50,3 +50,27 @@ function domainToLower() {
     var domainField = document.getElementById('domain');
     domainField.value = domainField.value.toLowerCase();
 }
+// From: https://davidwalsh.name/function-debounce
+// Returns a function, that, as long as it continues to be invoked, will not
+// be triggered. The function will be called after it stops being called for
+// N milliseconds. If `immediate` is passed, trigger the function on the
+// leading edge, instead of the trailing.
+function debounce(func, wait, immediate) {
+    var timeout;
+    var last = new Date();
+    return function() {
+        var now = new Date();
+        console.log((now - last)/1000);
+        last = now;
+
+        var context = this, args = arguments;
+        var later = function() {
+            timeout = null;
+            if (!immediate) func.apply(context, args);
+        };
+        var callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) func.apply(context, args);
+    };
+};

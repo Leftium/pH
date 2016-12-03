@@ -90,8 +90,10 @@ fieldset {
     font-weight: bold;
 }
 #result {
+    /*
     position:absolute;
     left:0; top:-1000px;
+    /**/
 
     background: #eee;
     margin: 20px 0;
