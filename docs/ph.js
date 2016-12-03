@@ -18,9 +18,18 @@ pw = function() {
     var resultField = document.getElementById('hashedPassword');
     resultField.style.visibility = 'visible';
     resultField.focus();
+    
+    if (document.selection) {
+        var sel = document.selection.createRange();
+        sel.move(0, resultField.value.length);
+        sel.select();
+    }
+    else {
+        resultField.selectionStart = 0;
+        resultField.selectionEnd = resultField.value.length;
+    }
 
-    success = copytext(resultField.value);
-
+    var success = document.execCommand('copy');
     if (success) {
         sitePasswordField.style.backgroundColor = 'lightgreen';
     } else {
@@ -45,7 +54,7 @@ function init() {
     bookmarklet.href = bookmarkletScript;
 
     sitePasswordField = document.getElementById('sitePassword');
-    sitePasswordField.style.backgroundColor = 'lightblue';
+    sitePasswordField.style.backgroundColor = 'yellow';
     sitePasswordField.oninput = pw;
 
     var domainField = document.getElementById('domain');
