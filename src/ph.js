@@ -68,6 +68,20 @@ pw = function() {
     document.getElementById('result').className = 'generated';
 };
 
+confirmPassword = function() {
+    var sitePasswordField = document.getElementById('sitePassword');
+    var confirmPasswordField = document.getElementById('confirmPassword');
+
+    if (sitePasswordField.value == confirmPasswordField.value) {
+        confirmPasswordField.style.backgroundColor = 'lightgreen';
+    } else {
+        confirmPasswordField.style.backgroundColor = 'pink';
+    }
+
+    console.log(success, window.selectedText);
+    document.getElementById('result').className = 'generated';
+};
+
 var extractDomain = new SPH_DomainExtractor().extractDomain
 if (!window.location.origin) {
     window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
@@ -80,6 +94,9 @@ function init() {
 
     sitePasswordField = document.getElementById('sitePassword');
     sitePasswordField.onkeyup = pw;
+
+    confirmPasswordField = document.getElementById('confirmPassword');
+    confirmPasswordField.onkeyup = confirmPassword;
 
     var domainField = document.getElementById('domain');
     if (navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPod/i)) {
