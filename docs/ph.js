@@ -1,9 +1,19 @@
-var textField = document.createElement('textarea');
 function copytext(text) {
+    var  = document.createElement('textarea');
     var success = false;
     textField.innerText = text;
     document.body.appendChild(textField);
-    textField.select();
+
+    if (document.selection) {
+        var sel = document.selection.createRange();
+        sel.move(0, textField.value.length);
+        sel.select();
+    }
+    else {
+        textField.selectionStart = 0;
+        textField.selectionEnd = resultField.value.length;
+    }
+
     success = document.execCommand('copy');
     document.body.removeChild(textField);
     return success;
@@ -19,6 +29,8 @@ pw = function() {
     resultField.style.visibility = 'visible';
     resultField.focus();
 
+
+    var success = copytext(resultField.value);
     /*
     if (document.selection) {
         var sel = document.selection.createRange();
@@ -32,8 +44,6 @@ pw = function() {
 
     var success = document.execCommand('copy');
     /**/
-
-    var success = copytext(resultField.value);
 
     if (success) {
         sitePasswordField.style.backgroundColor = 'lightgreen';
@@ -59,7 +69,7 @@ function init() {
     bookmarklet.href = bookmarkletScript;
 
     sitePasswordField = document.getElementById('sitePassword');
-    sitePasswordField.style.backgroundColor = 'gray';
+    sitePasswordField.style.backgroundColor = 'cyan';
     sitePasswordField.onkeyup = pw;
 
     var domainField = document.getElementById('domain');
