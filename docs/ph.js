@@ -54,8 +54,8 @@ function init() {
     bookmarklet.href = bookmarkletScript;
 
     sitePasswordField = document.getElementById('sitePassword');
-    sitePasswordField.style.backgroundColor = 'yellow';
-    sitePasswordField.oninput = pw;
+    sitePasswordField.style.backgroundColor = 'purple';
+    sitePasswordField.onkeyup = pw;
 
     var domainField = document.getElementById('domain');
     if (navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPod/i)) {
