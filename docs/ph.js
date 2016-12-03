@@ -1,10 +1,12 @@
 var textField = document.createElement('textarea');
 function copytext(text) {
+    var success = false;
     textField.innerText = text;
     document.body.appendChild(textField);
     textField.select();
-    document.execCommand('copy');
+    success = document.execCommand('copy');
     document.body.removeChild(textField);
+    return success;
 }
 
 pw = function() {
@@ -17,14 +19,7 @@ pw = function() {
     resultField.style.visibility = 'visible';
     resultField.focus();
 
-    copytext(resultField.value);
-
-    var success
-    try {
-        success = document.execCommand('copy');
-    } catch (error) {
-        console.log(error);
-    }
+    success = copytext(resultField.value);
 
     if (success) {
         sitePasswordField.style.backgroundColor = 'lightgreen';
@@ -50,6 +45,7 @@ function init() {
     bookmarklet.href = bookmarkletScript;
 
     sitePasswordField = document.getElementById('sitePassword');
+    sitePasswordField.style.backgroundColor = 'lightblue';
     sitePasswordField.oninput = pw;
 
     var domainField = document.getElementById('domain');
