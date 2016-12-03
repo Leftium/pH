@@ -1,63 +1,70 @@
-function copytext(text) {
-    var textField = document.createElement('textarea');
-    var success = false;
-    textField.innerText = text;
-    document.body.appendChild(textField);
+// From: https://github.com/zenorocha/select/blob/master/src/select.js
+function select(element) {
+    var selectedText;
 
-    // textField.select();
-    /**/
-    if (document.selection) {
-        var sel = document.selection.createRange();
-        sel.move(0, textField.value.length);
-        sel.select();
+    if (element.nodeName === 'SELECT') {
+        element.focus();
+
+        selectedText = element.value;
+    }
+    else if (element.nodeName === 'INPUT' || element.nodeName === 'TEXTAREA') {
+        element.focus();
+        element.setSelectionRange(0, element.value.length);
+
+        selectedText = element.value;
     }
     else {
-        textField.selectionStart = 0;
-        textField.selectionEnd = text.length;
-    }
-    /**/
+        if (element.hasAttribute('contenteditable')) {
+            element.focus();
+        }
 
+        var selection = window.getSelection();
+        var range = document.createRange();
+
+        range.selectNodeContents(element);
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        selectedText = selection.toString();
+    }
+
+    return selectedText;
+}
+
+// Based on:
+// https://www.reddit.com/r/web_design/comments/33kxgf/javascript_copying_to_clipboard_is_easier_than/
+// https://github.com/zenorocha/clipboard.js/blob/294e9fcb5d80c3966d18bae635cbcccfe9cd8664/src/clipboard-action.js
+
+function copytext(text) {
+    var success = false;
+    var sitePasswordField = document.getElementById('sitePassword');
+    var savedValue = sitePasswordField.value;
+
+    sitePasswordField.value = text;
+
+    sitePasswordField.type = 'text';
+    window.selectedText = select(sitePasswordField);
     success = document.execCommand('copy');
-    document.body.removeChild(textField);
-    textField.remove();
+    sitePasswordField.type = 'password'
+
+    sitePasswordField.value = savedValue;
+    console.log(sitePasswordField);
     return success;
 }
 
 pw = function() {
-    // console.log(arguments);
-    sitePasswordField = document.getElementById('sitePassword');
-    sitePasswordField.style.backgroundColor = 'white';
-    e = arguments[0];
     GenerateToTextField();
+    var sitePasswordField = document.getElementById('sitePassword');
     var resultField = document.getElementById('hashedPassword');
 
     var success = copytext(resultField.value);
-    /*
-    // resultField.style.visibility = 'visible';
-    // resultField.focus();
-    if (document.selection) {
-        var sel = document.selection.createRange();
-        sel.move(0, resultField.value.length);
-        sel.select();
-    }
-    else {
-        resultField.selectionStart = 0;
-        resultField.selectionEnd = resultField.value.length;
-    }
-
-    var success = document.execCommand('copy');
-    /**/
-
     if (success) {
         sitePasswordField.style.backgroundColor = 'lightgreen';
     } else {
         sitePasswordField.style.backgroundColor = 'pink';
     }
 
-
-    console.log(success, e.isTrusted, sitePasswordField.style.backgroundColor);
-
-    document.getElementById('sitePassword').focus();
+    console.log(success, window.selectedText);
     document.getElementById('result').className = 'generated';
 };
 
@@ -72,7 +79,6 @@ function init() {
     bookmarklet.href = bookmarkletScript;
 
     sitePasswordField = document.getElementById('sitePassword');
-    sitePasswordField.style.backgroundColor = 'yellow';
     sitePasswordField.onkeyup = pw;
 
     var domainField = document.getElementById('domain');
