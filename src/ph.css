@@ -89,37 +89,6 @@ fieldset {
     font-size: 12px;
     font-weight: bold;
 }
-#result {
-    /**/
-    position:absolute;
-    left:0; top:-1000px;
-    /**/
-
-    background: #eee;
-    margin: 20px 0;
-    padding: 20px 0;
-    text-align: center;
-}
-#result label {
-    display: none;
-}
-#result input {
-    background: #eee;
-    border: 0;
-    font-family: "Courier New", Courier, mono;
-    font-size: 20px;
-    font-weight: bold;
-    text-align: center;
-    width: 200px;
-    visibility: hidden;
-}
-#result.generated {
-    background: #ffc;
-}
-#result.generated input {
-    background: #fff;
-    border: 1px solid #999;
-}
 #bookmarklet {
     margin: 0;
     padding: 20px 0;

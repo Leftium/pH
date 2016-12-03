@@ -48,38 +48,40 @@ function copytext(text) {
     sitePasswordField.type = 'password'
 
     sitePasswordField.value = savedValue;
-    console.log(sitePasswordField);
     return success;
 }
 
 pw = function() {
-    GenerateToTextField();
-    var sitePasswordField = document.getElementById('sitePassword');
-    var resultField = document.getElementById('hashedPassword');
+    var hashedPassword = Generate();
+    var maskedPassword = hashedPassword.substring(0,2);
+    maskedPassword += new Array(hashedPassword.length - 1).join('•');
 
-    var success = copytext(resultField.value);
+    var sitePasswordField = document.getElementById('sitePassword');
+    var hashedPasswordField = document.getElementById('hashedPassword');
+
+    hashedPasswordField.trueValue = hashedPassword;
+    hashedPasswordField.maskValue = maskedPassword;
+    hashedPasswordField.value = maskedPassword;
+
+    var success = copytext(hashedPassword);
     if (success) {
         sitePasswordField.style.backgroundColor = 'lightgreen';
     } else {
         sitePasswordField.style.backgroundColor = 'pink';
     }
-
-    console.log(success, window.selectedText);
-    document.getElementById('result').className = 'generated';
 };
 
 confirmPassword = function() {
     var sitePasswordField = document.getElementById('sitePassword');
     var confirmPasswordField = document.getElementById('confirmPassword');
 
-    if (sitePasswordField.value == confirmPasswordField.value) {
-        confirmPasswordField.style.backgroundColor = 'lightgreen';
-    } else {
-        confirmPasswordField.style.backgroundColor = 'pink';
+    if (confirmPasswordField.value.length > 0) {
+        if (sitePasswordField.value == confirmPasswordField.value) {
+            confirmPasswordField.style.backgroundColor = 'lightgreen';
+        } else {
+            confirmPasswordField.style.backgroundColor = 'pink';
+        }
     }
-
-    console.log(success, window.selectedText);
-    document.getElementById('result').className = 'generated';
 };
 
 var extractDomain = new SPH_DomainExtractor().extractDomain
@@ -98,6 +100,16 @@ function init() {
     confirmPasswordField = document.getElementById('confirmPassword');
     confirmPasswordField.onkeyup = confirmPassword;
 
+    hashedPasswordField = document.getElementById('hashedPassword');
+    hashedPasswordField.onfocus = function() {
+        this.value = this.trueValue;
+        select(this);
+    }
+
+    hashedPasswordField.onblur = function() {
+        this.value = this.maskValue;
+    }
+
     var domainField = document.getElementById('domain');
     if (navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPod/i)) {
         domainField.type = 'url';
@@ -112,12 +124,7 @@ function init() {
         document.getElementById('sitePassword').focus();
     }
 }
-function startOver() {
-    document.getElementById('result').className = '';
-    var resultField = document.getElementById('hashedPassword');
-    resultField.value = '';
-    resultField.style.visibility = 'hidden';
-}
+
 function domainToLower() {
     var domainField = document.getElementById('domain');
     domainField.value = domainField.value.toLowerCase();
