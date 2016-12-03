@@ -58,15 +58,6 @@ input.text {
         width: 150px;
     }
 }
-#submitButton {
-    padding: 7px 10px;
-}
-@media only screen and (min-width: 400px) {
-    #submitButton {
-        margin-left: 150px;
-    }
-}
-
 h1 {
     border-bottom: 1px solid #D3D3F7;
     color: #333;
@@ -82,12 +73,6 @@ fieldset {
     border: 0;
     margin: 0;
     padding: 0;
-}
-#submitButton {
-    display:none;
-    background: #eee url(images/button_back.png) repeat-x;
-    font-size: 12px;
-    font-weight: bold;
 }
 #bookmarklet {
     margin: 0;
