@@ -110,6 +110,56 @@ function init() {
         this.value = this.maskValue || '';
     }
 
+    var domains = [
+        'paypal.com',
+        'vanguard.com',
+        'scottrade.com',
+        'simple.com',
+        'chase.com',
+        'onlinecreditcenter6.com',
+        'korbit.co.kr',
+        'bankofamerica.com',
+        'americanexpress.com',
+        'usbank.com',
+        'bkmks.com',
+        'personalcapital.com',
+        'amazon.com',
+        'simplenote.com',
+        'google.com',
+        'dropbox.com',
+        'camelcamelcamel.com',
+        'umn.edu',
+        'apple.com',
+        'protectmyid.com',
+        'creditkarma.com',
+        'ebates.com',
+        'prismmoney.com',
+        'reddit.com',
+        'facebook.com',
+        'appsliced.co',
+        'cloudflare.com',
+        'tripit.com',
+        'delta.com',
+    ];
+
+    window.ac = $('#domain').autocomplete({
+        lookup: domains,
+        appendTo: '#autocompleteContainer',
+        beforeRender: function (container) {
+            var domainInput = $('#domain')[0];
+            var style = {}
+            if (window.innerWidth < 400) {
+                // Mobile: @media only screen and (max-width: 400px)
+                style.left = -domainInput.offsetLeft;
+                style.width = window.innerWidth;
+            } else {
+                // Desktop: @media only screen and (min-width: 400px)
+                style.width = domainInput.clientWidth
+            }
+            $('.autocomplete-suggestions').css(style);
+        }
+    });
+
     var domainField = document.getElementById('domain');
     if (navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPod/i)) {
         domainField.type = 'url';
