@@ -171,6 +171,7 @@ function init() {
     ];
 
     window.ac = $('#domain').autocomplete({
+        autoSelectFirst: true,
         lookup: domains,
         appendTo: '#autocompleteContainer',
         beforeRender: function (container) {
