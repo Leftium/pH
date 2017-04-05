@@ -99,10 +99,22 @@ function init() {
     var bookmarklet = document.getElementById('bookmarklet');
     bookmarklet.href = bookmarkletScript;
 
+    clearField = function(e) {
+        // console.log(e.key);
+        if (e.key == 'Escape') {
+            e.target.value = ''
+        }
+    }
+
+    domainField = document.getElementById('domain');
+    domainField.onkeydown = clearField;
+
     sitePasswordField = document.getElementById('sitePassword');
+    sitePasswordField.onkeydown = clearField;
     sitePasswordField.onkeyup = pw;
 
     confirmPasswordField = document.getElementById('confirmPassword');
+    confirmPasswordField.onkeydown = clearField;
     confirmPasswordField.onkeyup = confirmPassword;
 
     hashedPasswordField = document.getElementById('hashedPassword');
@@ -140,10 +152,10 @@ function init() {
         'google.com',
         'humblebundle.com',
         'iherb.com',
-        'investor.vanguard.com',
+        'vanguard.com',
         'kakao.com',
         'korbit.co.kr',
-        'login.yahoo.com',
+        'yahoo.com',
         'mega.nz',
         'metrotransit.org',
         'my.ebay.com',
