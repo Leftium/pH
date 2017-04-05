@@ -74,13 +74,18 @@ pw = function() {
 confirmPassword = function() {
     var sitePasswordField = document.getElementById('sitePassword');
     var confirmPasswordField = document.getElementById('confirmPassword');
+    var sitePasswordPartial = sitePasswordField.value.substring(0, confirmPasswordField.value.length);
 
     if (confirmPasswordField.value.length > 0) {
         if (sitePasswordField.value == confirmPasswordField.value) {
             confirmPasswordField.style.backgroundColor = 'lightgreen';
+        } else if (confirmPasswordField.value == sitePasswordPartial) {
+            confirmPasswordField.style.backgroundColor = 'yellow';
         } else {
             confirmPasswordField.style.backgroundColor = 'pink';
         }
+    } else {
+        confirmPasswordField.style.backgroundColor = 'white';
     }
 };
 
