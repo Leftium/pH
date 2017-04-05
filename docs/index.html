@@ -16,6 +16,9 @@
     <script src="lib/md5.js"></script>
     <script src="lib/pwdhash.js"></script>
 
+    <script src="lib/jquery-3.1.1.slim.min.js"></script>
+    <script src="lib/jquery.autocomplete.min.js"></script>
+
     <script src="ph.js"></script>
 </head>
 <body onload="init();">
@@ -23,11 +26,14 @@
 <div id="page">
 
     <h1>Password Generator</h1>
-    <form name="hashform" autocomplete="off">
+    <form id= 'hashform' name="hashform" autocomplete="off">
         <fieldset>
             <p>
                 <label for="domain">Domain</label>
-                <input type="text" name="domain" id="domain" value="" class="text" />
+                <span id="domainWrapper" >
+                    <input type="text" name="domain" id="domain" value="" class="text" />
+                    <span id='autocompleteContainer'></span>
+                <span>
             </p>
             <div class="clear"></div>
             <p>
