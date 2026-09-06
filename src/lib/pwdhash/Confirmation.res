@@ -4,6 +4,11 @@ type confirmationState =
   | ExactMatch
   | Mismatch
 
+type confirmationPresentation = {
+  className: string,
+  message: option<string>,
+}
+
 @genType
 let getConfirmationState = (~password: string, ~confirmation: string): confirmationState =>
   if confirmation == "" {
@@ -17,10 +22,10 @@ let getConfirmationState = (~password: string, ~confirmation: string): confirmat
   }
 
 @genType
-let confirmationClass = (~password: string, ~confirmation: string): string =>
+let presentConfirmation = (~password: string, ~confirmation: string): confirmationPresentation =>
   switch getConfirmationState(~password, ~confirmation) {
-  | Empty => "neutral"
-  | MatchingPrefix => "matching-prefix"
-  | ExactMatch => "exact-match"
-  | Mismatch => "mismatch"
+  | Empty => {className: "neutral", message: None}
+  | MatchingPrefix => {className: "matching-prefix", message: Some("Passwords match so far.")}
+  | ExactMatch => {className: "exact-match", message: Some("Passwords match.")}
+  | Mismatch => {className: "mismatch", message: Some("Passwords do not match.")}
   }

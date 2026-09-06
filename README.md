@@ -1,16 +1,16 @@
 # pH
 
-- [ph.leftium.com](https://ph.leftium.com/) makes a unique password for every domain from one master password.
+- [ph.leftium.com](https://ph.leftium.com/) makes a unique password for each site from one master password.
 - Runs entirely in your browser: nothing is stored or sent to a server.
 - Based on the original [PwdHash](http://www.pwdhash.com/).
 
 ## Usage
 
-1. Enter a site address: a domain or a complete `http://` or `https://` URL. pH detects the domain automatically.
+1. Enter the site's address. pH uses the same password realm for its subdomains.
 2. Enter your master password.
 3. Copy the generated password.
 
-_Optional:_ Drag the `pH` bookmarklet from the footer to the bookmarks bar to prefill the current site's domain.
+_Optional:_ Drag the `pH` bookmarklet from the footer to the bookmarks bar to prefill the current site's address.
 
 ## Develop
 
@@ -47,49 +47,3 @@ The included GitHub Actions workflow checks, tests, builds, and deploys pushes t
 ## License
 
 [MIT](LICENSE)
-
-<details>
-<summary>Original Svelte scaffold notes</summary>
-
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
-
-### Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project
-npx sv create my-app
-```
-
-To recreate this project with the same configuration:
-
-```sh
-# recreate this project
-pnpm dlx sv@1.0.0-next.7 create --template minimal --types ts --add prettier eslint vitest="usages:unit" ai-tools="ide:other,opencode" --install pnpm .
-```
-
-### Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-### Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
-
-</details>

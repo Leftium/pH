@@ -1,29 +1,40 @@
 import { describe, expect, it } from 'vitest';
 
-import { confirmationClass, getConfirmationState } from './Confirmation.gen.tsx';
-import { copyToClipboard } from './Clipboard.gen.tsx';
-import { extractDomain } from './DomainExtractor.gen.tsx';
+import { getConfirmationState, presentConfirmation } from './Confirmation.gen.tsx';
+import { copyFeedbackMessage, copyToClipboard } from './Clipboard.gen.tsx';
+import { presentForm } from './Form.gen.tsx';
 import { generatePassword } from './Password.gen.tsx';
+import { resolve } from './Realm.gen.tsx';
 
 describe('domain extraction', () => {
 	it.each([
-		['https://www.example.com', 'example.com'],
+		[' https://www.example.com ', 'example.com'],
 		['http://sub.example.co.uk/path?q=1', 'example.co.uk'],
-		['HTTPS://WWW.Example.COM/path', 'HTTPS:'],
+		['HTTPS://WWW.Example.COM:443/path', 'example.com'],
+		['//www.example.com/path', 'example.com'],
 		['foo.blogspot.com', 'blogspot.com'],
-		['foo.example.invalid', 'example.invalid'],
-		['localhost', 'localhost'],
-		['not a host', 'not a host']
-	])('matches the v1 extractor for %s', (input, expected) => {
-		expect(extractDomain(input)).toEqual({ TAG: 'Ok', _0: expected });
+		['foo.example.org.ru', 'example.org.ru'],
+		['a.example.com', 'example.com'],
+		['b.example.com', 'example.com']
+	])('uses a normalized two-label realm for %s', (input, expected) => {
+		expect(resolve(input)).toEqual({ TAG: 'Ok', _0: expected });
 	});
 
-	it.each(['', '   '])('returns MissingDomain for an empty domain input', (input) => {
-		expect(extractDomain(input)).toEqual({ TAG: 'Error', _0: 'MissingDomain' });
+	it.each(['', '   '])('returns MissingAddress for an empty site address', (input) => {
+		expect(resolve(input)).toEqual({ TAG: 'Error', _0: 'MissingAddress' });
 	});
 
-	it('turns a non-empty legacy extractor failure into DomainExtractionFailed', () => {
-		expect(extractDomain('http://')).toEqual({ TAG: 'Error', _0: 'DomainExtractionFailed' });
+	it.each(['http://', 'not a host', 'foo.example.invalid', '127.0.0.1'])(
+		'rejects invalid site addresses',
+		(input) => {
+			expect(resolve(input)).toEqual({ TAG: 'Error', _0: 'InvalidAddress' });
+		}
+	);
+
+	it('generates the same password for different subdomains', () => {
+		expect(generatePassword('a.example.com', 'password')).toEqual(
+			generatePassword('b.example.com', 'password')
+		);
 	});
 });
 
@@ -49,18 +60,36 @@ describe('password generation', () => {
 
 describe('confirmation', () => {
 	it.each([
-		['', 'Empty', 'neutral'],
-		['a', 'MatchingPrefix', 'matching-prefix'],
-		['abc', 'ExactMatch', 'exact-match'],
-		['ax', 'Mismatch', 'mismatch']
-	])('classifies %s against abc', (confirmation, state, className) => {
+		['', 'Empty', { className: 'neutral', message: undefined }],
+		['a', 'MatchingPrefix', { className: 'matching-prefix', message: 'Passwords match so far.' }],
+		['abc', 'ExactMatch', { className: 'exact-match', message: 'Passwords match.' }],
+		['ax', 'Mismatch', { className: 'mismatch', message: 'Passwords do not match.' }]
+	])('classifies %s against abc', (confirmation, state, presentation) => {
 		expect(getConfirmationState('abc', confirmation)).toEqual(state);
-		expect(confirmationClass('abc', confirmation)).toBe(className);
+		expect(presentConfirmation('abc', confirmation)).toEqual(presentation);
 	});
 
 	it('does not retain an exact match after the source password changes', () => {
-		expect(confirmationClass('abc', 'abc')).toBe('exact-match');
-		expect(confirmationClass('abd', 'abc')).toBe('mismatch');
+		expect(presentConfirmation('abc', 'abc').className).toBe('exact-match');
+		expect(presentConfirmation('abd', 'abc').className).toBe('mismatch');
+	});
+});
+
+describe('form presentation', () => {
+	it('only reveals a missing password after submission', () => {
+		expect(presentForm('example.com', '', false)).toMatchObject({
+			resolvedDomain: 'example.com',
+			generatedPassword: undefined,
+			passwordError: undefined
+		});
+		expect(presentForm('example.com', '', true).passwordError).toBe('Enter a master password.');
+	});
+
+	it('does not provide a generated password when the domain is invalid', () => {
+		expect(presentForm('http://', 'secret', false)).toMatchObject({
+			generatedPassword: undefined,
+			domainError: 'Enter a valid site address.'
+		});
 	});
 });
 
@@ -80,5 +109,8 @@ describe('clipboard', () => {
 		const result = await copyToClipboard(() => Promise.reject(new Error('denied')), 'secret');
 
 		expect(result).toEqual({ TAG: 'Error', _0: 'CopyFailed' });
+		expect(copyFeedbackMessage(result)).toBe(
+			'Copy failed. Use the generated-password field instead.'
+		);
 	});
 });

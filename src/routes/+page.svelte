@@ -1,106 +1,50 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
-	import { confirmationClass } from '#lib/pwdhash/Confirmation.gen.tsx';
-	import { copyToClipboard } from '#lib/pwdhash/Clipboard.gen.tsx';
-	import { extractDomain } from '#lib/pwdhash/DomainExtractor.gen.tsx';
-	import { generatePassword } from '#lib/pwdhash/Password.gen.tsx';
+	import { presentConfirmation } from '#lib/pwdhash/Confirmation.gen.tsx';
+	import { copyFeedbackMessage, copyToClipboard } from '#lib/pwdhash/Clipboard.gen.tsx';
+	import { presentForm } from '#lib/pwdhash/Form.gen.tsx';
 
 	let domainInput = $state('');
 	let sourcePassword = $state('');
 	let confirmationInput = $state('');
-	let generation = $state<ReturnType<typeof generatePassword> | null>(null);
-	let hasRequestedGeneration = $state(false);
+	let hasSubmitted = $state(false);
 	let isGeneratedPasswordFocused = $state(false);
-	let copyFeedback = $state<'idle' | 'copied' | 'failed'>('idle');
+	let copyFeedback = $state('');
 	let copyAttempt = 0;
 	let bookmarkletHref = $state('');
 	let initialFocus = $state<'domain' | 'password' | null>(null);
 
-	let generatedPassword = $derived(generation?.TAG === 'Ok' ? generation._0 : '');
+	let form = $derived(presentForm(domainInput, sourcePassword, hasSubmitted));
 	let generatedPasswordDisplay = $derived(
-		isGeneratedPasswordFocused || generatedPassword === ''
-			? generatedPassword
-			: `${generatedPassword.slice(0, 2)}${'*'.repeat(Math.max(generatedPassword.length - 2, 0))}`
+		form.generatedPassword === undefined || isGeneratedPasswordFocused
+			? (form.generatedPassword ?? '')
+			: `${form.generatedPassword.slice(0, 2)}${'*'.repeat(Math.max(form.generatedPassword.length - 2, 0))}`
 	);
-	let currentConfirmationClass = $derived(
-		sourcePassword === '' ? 'neutral' : confirmationClass(sourcePassword, confirmationInput)
-	);
-	let confirmationMessage = $derived(
-		currentConfirmationClass === 'matching-prefix'
-			? 'Passwords match so far.'
-			: currentConfirmationClass === 'exact-match'
-				? 'Passwords match.'
-				: currentConfirmationClass === 'mismatch'
-					? 'Passwords do not match.'
-					: ''
-	);
-	let domainError = $derived(
-		hasRequestedGeneration && generation?.TAG === 'Error'
-			? generation._0 === 'MissingDomain'
-				? 'Enter a domain.'
-				: 'Enter a valid domain.'
-			: ''
-	);
-	let resolvedDomain = $derived.by(() => {
-		if (domainInput === '') {
-			return '';
-		}
+	let confirmation = $derived(presentConfirmation(sourcePassword, confirmationInput));
 
-		const extractedDomain = extractDomain(domainInput);
-		return extractedDomain.TAG === 'Ok' ? extractedDomain._0 : '';
-	});
-
-	function generateCurrentPassword() {
+	function resetCopyFeedback() {
 		copyAttempt += 1;
-		copyFeedback = 'idle';
-
-		if (sourcePassword === '') {
-			generation = null;
-			return;
-		}
-
-		generation = generatePassword(domainInput, sourcePassword);
-	}
-
-	function updateDomain(value: string) {
-		domainInput = value;
-		generateCurrentPassword();
-	}
-
-	function updateSourcePassword(value: string) {
-		sourcePassword = value;
-		if (value !== '') {
-			hasRequestedGeneration = true;
-		}
-		generateCurrentPassword();
+		copyFeedback = '';
 	}
 
 	async function copyGeneratedPassword() {
-		hasRequestedGeneration = true;
-		copyAttempt += 1;
+		hasSubmitted = true;
+		resetCopyFeedback();
 		const activeCopyAttempt = copyAttempt;
-		copyFeedback = 'idle';
-		if (sourcePassword === '') {
-			generation = null;
-			return;
-		}
-
-		generation = generatePassword(domainInput, sourcePassword);
-
-		if (generation.TAG === 'Error') {
+		if (form.generatedPassword === undefined) {
 			return;
 		}
 
 		const result = await copyToClipboard(
 			(text) => navigator.clipboard.writeText(text),
-			generation._0
+			form.generatedPassword
 		);
 		if (activeCopyAttempt === copyAttempt) {
-			copyFeedback = result.TAG === 'Ok' ? 'copied' : 'failed';
+			copyFeedback = copyFeedbackMessage(result);
 		}
 	}
 
-	function bookmarkletDomain() {
+	function bookmarkletAddress() {
 		const hash = window.location.hash.slice(1);
 		if (hash === '') {
 			return '';
@@ -113,9 +57,8 @@
 		}
 	}
 
-	function createBookmarkletHref() {
-		const generatorUrl = `${window.location.origin}${window.location.pathname}${window.location.search}`;
-		const script = `window.open(${JSON.stringify(`${generatorUrl}#`)}+encodeURIComponent(location.href),'_blank','noopener')`;
+	function createBookmarkletHref(generatorUrl: string) {
+		const script = `window.open(${JSON.stringify(generatorUrl)}+'\\x23'+encodeURIComponent(location.href),'_blank','noopener')`;
 		return `javascript:${script}`;
 	}
 
@@ -131,13 +74,11 @@
 	}
 
 	onMount(() => {
-		bookmarkletHref = createBookmarkletHref();
-		const initialDomain = bookmarkletDomain();
-		if (initialDomain !== '') {
-			const extractedDomain = extractDomain(initialDomain);
-			updateDomain(extractedDomain.TAG === 'Ok' ? extractedDomain._0 : initialDomain);
-		}
-		initialFocus = initialDomain === '' ? 'domain' : 'password';
+		const generatorUrl = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+		bookmarkletHref = createBookmarkletHref(generatorUrl);
+		const initialAddress = bookmarkletAddress();
+		domainInput = initialAddress;
+		initialFocus = initialAddress === '' ? 'domain' : 'password';
 	});
 </script>
 
@@ -147,9 +88,7 @@
 
 <main>
 	<h1>PwdHash Generator</h1>
-	<p class="intro">
-		Create a unique password for each domain without storing your master password.
-	</p>
+	<p class="intro">Create a unique password for each site without storing your master password.</p>
 
 	<form
 		onsubmit={(event) => {
@@ -164,19 +103,19 @@
 				name="domain"
 				type="text"
 				autocomplete="url"
-				aria-invalid={domainError === '' ? undefined : true}
+				aria-invalid={form.domainError === undefined ? undefined : true}
 				aria-describedby="domain-status"
-				value={domainInput}
+				bind:value={domainInput}
 				{@attach focusWhenSelected('domain', initialFocus)}
-				oninput={(event) => updateDomain(event.currentTarget.value)}
+				oninput={resetCopyFeedback}
 			/>
-			<p id="domain-status" class:error={domainError !== ''}>
-				{#if domainError}
-					<span role="alert">{domainError}</span>
-				{:else if resolvedDomain !== ''}
-					Domain: {resolvedDomain}
+			<p id="domain-status" class="field-status" class:error={form.domainError !== undefined}>
+				{#if form.domainError}
+					<span role="alert">{form.domainError}</span>
+				{:else if form.resolvedDomain !== undefined}
+					Domain: {form.resolvedDomain}
 				{:else}
-					Enter a domain or paste a full URL.
+					Enter a site address.
 				{/if}
 			</p>
 		</div>
@@ -188,10 +127,15 @@
 				name="source-password"
 				type="password"
 				autocomplete="current-password"
-				value={sourcePassword}
+				aria-invalid={form.passwordError === undefined ? undefined : true}
+				aria-describedby="password-status"
+				bind:value={sourcePassword}
 				{@attach focusWhenSelected('password', initialFocus)}
-				oninput={(event) => updateSourcePassword(event.currentTarget.value)}
+				oninput={resetCopyFeedback}
 			/>
+			<p id="password-status" class="field-status" class:error={form.passwordError !== undefined}>
+				{#if form.passwordError}<span role="alert">{form.passwordError}</span>{/if}
+			</p>
 		</div>
 
 		<div class="field">
@@ -201,10 +145,10 @@
 				name="confirmation"
 				type="password"
 				autocomplete="off"
-				class={currentConfirmationClass}
+				class={confirmation.className}
 				bind:value={confirmationInput}
 			/>
-			<p class="confirmation-status" aria-live="polite">{confirmationMessage}</p>
+			<p class="field-status" aria-live="polite">{confirmation.message}</p>
 		</div>
 
 		<div class="field">
@@ -227,13 +171,7 @@
 			/>
 			<div class="actions">
 				<button type="submit">Copy</button>
-				<p class="copy-feedback" aria-live="polite">
-					{#if copyFeedback === 'copied'}
-						Copied.
-					{:else if copyFeedback === 'failed'}
-						Copy failed. Use the generated-password field instead.
-					{/if}
-				</p>
+				<p class="copy-feedback" aria-live="polite">{copyFeedback}</p>
 			</div>
 		</div>
 	</form>
@@ -328,13 +266,13 @@
 		background: #ffe1e6;
 	}
 
-	#domain-status {
+	.field-status {
 		min-height: 1.5rem;
 		margin: 0;
 		color: #4b5563;
 	}
 
-	#domain-status.error {
+	.field-status.error {
 		color: #a40022;
 	}
 
@@ -348,11 +286,6 @@
 	}
 
 	.copy-feedback {
-		min-height: 1.5rem;
-		margin: 0;
-	}
-
-	.confirmation-status {
 		min-height: 1.5rem;
 		margin: 0;
 	}
