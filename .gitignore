@@ -8,6 +8,9 @@ node_modules
 /.svelte-kit
 /build
 
+# ReScript compiler cache and intermediate artifacts.
+/lib
+
 # OS
 .DS_Store
 Thumbs.db
@@ -21,3 +24,7 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# ReScript build output
+*.res.js
+*.gen.tsx

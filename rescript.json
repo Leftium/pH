@@ -1,0 +1,19 @@
+{
+	"name": "ph",
+	"sources": [
+		{
+			"dir": "src/lib/pwdhash",
+			"subdirs": true
+		}
+	],
+	"package-specs": {
+		"module": "esmodule",
+		"in-source": true
+	},
+	"suffix": ".res.js",
+	"gentypeconfig": {
+		"module": "esmodule",
+		"moduleResolution": "bundler",
+		"generatedFileExtension": ".gen.tsx"
+	}
+}
