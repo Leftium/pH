@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { onMount, tick } from 'svelte';
 	import { confirmationClass } from '#lib/pwdhash/Confirmation.gen.tsx';
 	import { copyToClipboard } from '#lib/pwdhash/Clipboard.gen.tsx';
+	import { extractDomain } from '#lib/pwdhash/DomainExtractor.gen.tsx';
 	import { generatePassword } from '#lib/pwdhash/Password.gen.tsx';
 
 	let domainInput = $state('');
@@ -11,6 +13,8 @@
 	let isGeneratedPasswordFocused = $state(false);
 	let copyFeedback = $state<'idle' | 'copied' | 'failed'>('idle');
 	let copyAttempt = 0;
+	let bookmarkletHref = $state('');
+	let initialFocus = $state<'domain' | 'password' | null>(null);
 
 	let generatedPassword = $derived(generation?.TAG === 'Ok' ? generation._0 : '');
 	let generatedPasswordDisplay = $derived(
@@ -87,16 +91,61 @@
 			copyFeedback = result.TAG === 'Ok' ? 'copied' : 'failed';
 		}
 	}
+
+	function bookmarkletDomain() {
+		const hash = window.location.hash.slice(1);
+		if (hash === '') {
+			return '';
+		}
+
+		try {
+			return decodeURIComponent(hash);
+		} catch {
+			return hash;
+		}
+	}
+
+	function createBookmarkletHref() {
+		const generatorUrl = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+		const script = `window.open(${JSON.stringify(`${generatorUrl}#`)}+encodeURIComponent(location.href),'_blank','noopener')`;
+		return `javascript:${script}`;
+	}
+
+	function focusWhenSelected(
+		target: 'domain' | 'password',
+		selected: 'domain' | 'password' | null
+	) {
+		return (element: HTMLInputElement) => {
+			if (target === selected) {
+				element.focus();
+			}
+		};
+	}
+
+	onMount(() => {
+		bookmarkletHref = createBookmarkletHref();
+		const initialDomain = bookmarkletDomain();
+		if (initialDomain !== '') {
+			const extractedDomain = extractDomain(initialDomain);
+			updateDomain(extractedDomain.TAG === 'Ok' ? extractedDomain._0 : initialDomain);
+		}
+		initialFocus = initialDomain === '' ? 'domain' : 'password';
+	});
 </script>
 
 <svelte:head>
-	<title>Password Generator</title>
+	<title>PwdHash Generator</title>
 </svelte:head>
 
 <main>
-	<h1>Password Generator</h1>
+	<h1>PwdHash Generator</h1>
 
-	<form onsubmit={(event) => event.preventDefault()}>
+	<form
+		onsubmit={(event) => {
+			event.preventDefault();
+			void copyGeneratedPassword();
+		}}
+	>
 		<div class="field">
 			<label for="domain">Domain</label>
 			<input
@@ -107,6 +156,7 @@
 				aria-invalid={domainError === '' ? undefined : true}
 				aria-describedby={domainError === '' ? undefined : 'domain-error'}
 				value={domainInput}
+				{@attach focusWhenSelected('domain', initialFocus)}
 				oninput={(event) => updateDomain(event.currentTarget.value)}
 			/>
 			{#if domainError}
@@ -122,6 +172,7 @@
 				type="password"
 				autocomplete="current-password"
 				value={sourcePassword}
+				{@attach focusWhenSelected('password', initialFocus)}
 				oninput={(event) => updateSourcePassword(event.currentTarget.value)}
 			/>
 		</div>
@@ -140,7 +191,7 @@
 		</div>
 
 		<div class="field">
-			<label for="generated-password">Hashed Password</label>
+			<label for="generated-password">Generated Password</label>
 			<input
 				id="generated-password"
 				name="generated-password"
@@ -149,13 +200,18 @@
 				autocomplete="off"
 				value={generatedPasswordDisplay}
 				aria-label="Generated password. Focus to reveal the full value."
-				onfocus={() => (isGeneratedPasswordFocused = true)}
+				onfocus={async (event) => {
+					const input = event.currentTarget;
+					isGeneratedPasswordFocused = true;
+					await tick();
+					input.select();
+				}}
 				onblur={() => (isGeneratedPasswordFocused = false)}
 			/>
 		</div>
 
 		<div class="actions">
-			<button type="button" onclick={copyGeneratedPassword}>Copy</button>
+			<button type="submit">Copy</button>
 			<p class="copy-feedback" aria-live="polite">
 				{#if copyFeedback === 'copied'}
 					Copied.
@@ -165,6 +221,11 @@
 			</p>
 		</div>
 	</form>
+
+	<footer>
+		Bookmarklet: <a href={bookmarkletHref}>pH</a>
+		<span id="bookmarklet-help">Drag it to your bookmarks bar.</span>
+	</footer>
 </main>
 
 <style>
@@ -230,5 +291,13 @@
 	.confirmation-status {
 		min-height: 1.5rem;
 		margin: 0;
+	}
+
+	footer {
+		margin-top: 2rem;
+	}
+
+	#bookmarklet-help {
+		margin-left: 0.5rem;
 	}
 </style>
