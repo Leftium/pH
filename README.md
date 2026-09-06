@@ -1,8 +1,16 @@
 # pH
 
-[pH](https://ph.leftium.com/) makes a unique password for every domain from one master password. It runs entirely in your browser: nothing is stored or sent to a server. It is based on the original [PwdHash](http://www.pwdhash.com/).
+- [ph.leftium.com](https://ph.leftium.com/) makes a unique password for every domain from one master password.
+- Runs entirely in your browser: nothing is stored or sent to a server.
+- Based on the original [PwdHash](http://www.pwdhash.com/).
 
-Enter a domain or paste a normal `http://` or `https://` URL, then enter your master password. Drag the `pH` bookmarklet from the footer to the bookmarks bar to prefill the current site's domain.
+## Usage
+
+1. Enter a site address: a domain or a complete `http://` or `https://` URL. pH detects the domain automatically.
+2. Enter your master password.
+3. Copy the generated password.
+
+_Optional:_ Drag the `pH` bookmarklet from the footer to the bookmarks bar to prefill the current site's domain.
 
 ## Develop
 

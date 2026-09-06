@@ -41,6 +41,14 @@
 				: 'Enter a valid domain.'
 			: ''
 	);
+	let resolvedDomain = $derived.by(() => {
+		if (domainInput === '') {
+			return '';
+		}
+
+		const extractedDomain = extractDomain(domainInput);
+		return extractedDomain.TAG === 'Ok' ? extractedDomain._0 : '';
+	});
 
 	function generateCurrentPassword() {
 		copyAttempt += 1;
@@ -150,21 +158,27 @@
 		}}
 	>
 		<div class="field">
-			<label for="domain">Domain</label>
+			<label for="domain">Site Address</label>
 			<input
 				id="domain"
 				name="domain"
 				type="text"
 				autocomplete="url"
 				aria-invalid={domainError === '' ? undefined : true}
-				aria-describedby={domainError === '' ? undefined : 'domain-error'}
+				aria-describedby="domain-status"
 				value={domainInput}
 				{@attach focusWhenSelected('domain', initialFocus)}
 				oninput={(event) => updateDomain(event.currentTarget.value)}
 			/>
-			{#if domainError}
-				<p id="domain-error" class="error" role="alert">{domainError}</p>
-			{/if}
+			<p id="domain-status" class:error={domainError !== ''}>
+				{#if domainError}
+					<span role="alert">{domainError}</span>
+				{:else if resolvedDomain !== ''}
+					Domain: {resolvedDomain}
+				{:else}
+					Enter a domain or paste a full URL.
+				{/if}
+			</p>
 		</div>
 
 		<div class="field">
@@ -211,26 +225,29 @@
 				}}
 				onblur={() => (isGeneratedPasswordFocused = false)}
 			/>
-		</div>
-
-		<div class="actions">
-			<button type="submit">Copy</button>
-			<p class="copy-feedback" aria-live="polite">
-				{#if copyFeedback === 'copied'}
-					Copied.
-				{:else if copyFeedback === 'failed'}
-					Copy failed. Use the generated-password field instead.
-				{/if}
-			</p>
+			<div class="actions">
+				<button type="submit">Copy</button>
+				<p class="copy-feedback" aria-live="polite">
+					{#if copyFeedback === 'copied'}
+						Copied.
+					{:else if copyFeedback === 'failed'}
+						Copy failed. Use the generated-password field instead.
+					{/if}
+				</p>
+			</div>
 		</div>
 	</form>
 
 	<footer>
-		<div>
-			Bookmarklet: <a href={bookmarkletHref}>pH</a>
-			<span id="bookmarklet-help">Drag it to your bookmarks bar.</span>
+		<div class="footer-row">
+			<span class="bookmarklet">
+				Bookmarklet: <a href={bookmarkletHref} aria-describedby="bookmarklet-help">pH</a>
+				<span id="bookmarklet-help" class="bookmarklet-tooltip" role="tooltip">
+					Drag to your bookmarks bar.
+				</span>
+			</span>
+			<a href="https://github.com/Leftium/pH">Source on GitHub</a>
 		</div>
-		<div class="footer-row"><a href="https://github.com/Leftium/pH">Source on GitHub</a></div>
 	</footer>
 </main>
 
@@ -256,11 +273,11 @@
 	form,
 	.field {
 		display: grid;
-		gap: 0.5rem;
+		gap: 0.25rem;
 	}
 
 	form {
-		gap: 1rem;
+		gap: 1.25rem;
 	}
 
 	input,
@@ -272,6 +289,12 @@
 		padding: 0.5rem;
 		border: 1px solid #aeb7c4;
 		border-radius: 0.35rem;
+	}
+
+	.field label,
+	.field input,
+	.actions button {
+		margin: 0;
 	}
 
 	button {
@@ -305,15 +328,23 @@
 		background: #ffe1e6;
 	}
 
-	.error {
+	#domain-status {
+		min-height: 1.5rem;
 		margin: 0;
+		color: #4b5563;
+	}
+
+	#domain-status.error {
 		color: #a40022;
 	}
 
 	.actions {
-		display: flex;
-		align-items: baseline;
-		gap: 1rem;
+		display: grid;
+		gap: 0.25rem;
+	}
+
+	.actions button {
+		width: 100%;
 	}
 
 	.copy-feedback {
@@ -330,11 +361,40 @@
 		margin-top: 2rem;
 	}
 
-	#bookmarklet-help {
-		margin-left: 0.5rem;
+	.footer-row {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: 0.5rem 1rem;
 	}
 
-	.footer-row {
-		margin-top: 0.5rem;
+	.bookmarklet {
+		position: relative;
+	}
+
+	.bookmarklet-tooltip {
+		position: absolute;
+		bottom: calc(100% + 0.5rem);
+		left: 0;
+		z-index: 1;
+		width: max-content;
+		max-width: min(18rem, calc(100vw - 3rem));
+		padding: 0.35rem 0.5rem;
+		border-radius: 0.25rem;
+		background: #1f2937;
+		color: white;
+		font-size: 0.875rem;
+		opacity: 0;
+		pointer-events: none;
+		transform: translateY(0.25rem);
+		transition:
+			opacity 0.1s,
+			transform 0.1s;
+	}
+
+	.bookmarklet a:hover + .bookmarklet-tooltip,
+	.bookmarklet:focus-within .bookmarklet-tooltip {
+		opacity: 1;
+		transform: translateY(0);
 	}
 </style>
