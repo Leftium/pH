@@ -139,6 +139,9 @@
 
 <main>
 	<h1>PwdHash Generator</h1>
+	<p class="intro">
+		Create a unique password for each domain without storing your master password.
+	</p>
 
 	<form
 		onsubmit={(event) => {
@@ -165,7 +168,7 @@
 		</div>
 
 		<div class="field">
-			<label for="source-password">Password</label>
+			<label for="source-password">Master Password</label>
 			<input
 				id="source-password"
 				name="source-password"
@@ -178,7 +181,7 @@
 		</div>
 
 		<div class="field">
-			<label for="confirmation">Confirm Password <span>(Optional)</span></label>
+			<label for="confirmation">Confirm Master Password <span>(Optional)</span></label>
 			<input
 				id="confirmation"
 				name="confirmation"
@@ -223,8 +226,11 @@
 	</form>
 
 	<footer>
-		Bookmarklet: <a href={bookmarkletHref}>pH</a>
-		<span id="bookmarklet-help">Drag it to your bookmarks bar.</span>
+		<div>
+			Bookmarklet: <a href={bookmarkletHref}>pH</a>
+			<span id="bookmarklet-help">Drag it to your bookmarks bar.</span>
+		</div>
+		<div class="footer-row"><a href="https://github.com/Leftium/pH">Source on GitHub</a></div>
 	</footer>
 </main>
 
@@ -232,7 +238,19 @@
 	main {
 		max-width: 32rem;
 		margin: 3rem auto;
-		padding: 0 1rem;
+		padding: 2rem 1.5rem;
+		border: 1px solid #d9dee7;
+		border-radius: 0.75rem;
+		box-shadow: 0 0.5rem 1.5rem rgb(28 38 55 / 8%);
+	}
+
+	h1 {
+		margin-top: 0;
+	}
+
+	.intro {
+		margin: -0.5rem 0 1.5rem;
+		color: #4b5563;
 	}
 
 	form,
@@ -252,6 +270,21 @@
 
 	input {
 		padding: 0.5rem;
+		border: 1px solid #aeb7c4;
+		border-radius: 0.35rem;
+	}
+
+	button {
+		padding: 0.5rem 1rem;
+		border: 0;
+		border-radius: 0.35rem;
+		background: #2457a6;
+		color: white;
+		cursor: pointer;
+	}
+
+	button:hover {
+		background: #1c4584;
 	}
 
 	label span {
@@ -299,5 +332,9 @@
 
 	#bookmarklet-help {
 		margin-left: 0.5rem;
+	}
+
+	.footer-row {
+		margin-top: 0.5rem;
 	}
 </style>
