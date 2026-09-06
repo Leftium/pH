@@ -2,7 +2,6 @@
 	import { confirmationClass } from '#lib/pwdhash/Confirmation.gen.tsx';
 	import { copyToClipboard } from '#lib/pwdhash/Clipboard.gen.tsx';
 	import { generatePassword } from '#lib/pwdhash/Password.gen.tsx';
-	import { onDestroy } from 'svelte';
 
 	let domainInput = $state('');
 	let sourcePassword = $state('');
@@ -11,7 +10,6 @@
 	let hasRequestedGeneration = $state(false);
 	let isGeneratedPasswordFocused = $state(false);
 	let copyFeedback = $state<'idle' | 'copied' | 'failed'>('idle');
-	let generationTimer: number | undefined;
 	let copyAttempt = 0;
 
 	let generatedPassword = $derived(generation?.TAG === 'Ok' ? generation._0 : '');
@@ -40,11 +38,7 @@
 			: ''
 	);
 
-	function scheduleGeneration() {
-		if (generationTimer !== undefined) {
-			window.clearTimeout(generationTimer);
-		}
-
+	function generateCurrentPassword() {
 		copyAttempt += 1;
 		copyFeedback = 'idle';
 
@@ -53,17 +47,12 @@
 			return;
 		}
 
-		const nextDomain = domainInput;
-		const nextPassword = sourcePassword;
-		generationTimer = window.setTimeout(() => {
-			generation = generatePassword(nextDomain, nextPassword);
-			generationTimer = undefined;
-		}, 200);
+		generation = generatePassword(domainInput, sourcePassword);
 	}
 
 	function updateDomain(value: string) {
 		domainInput = value;
-		scheduleGeneration();
+		generateCurrentPassword();
 	}
 
 	function updateSourcePassword(value: string) {
@@ -71,17 +60,19 @@
 		if (value !== '') {
 			hasRequestedGeneration = true;
 		}
-		scheduleGeneration();
+		generateCurrentPassword();
 	}
 
 	async function copyGeneratedPassword() {
 		hasRequestedGeneration = true;
 		copyAttempt += 1;
 		const activeCopyAttempt = copyAttempt;
-		if (generationTimer !== undefined) {
-			window.clearTimeout(generationTimer);
-			generationTimer = undefined;
+		copyFeedback = 'idle';
+		if (sourcePassword === '') {
+			generation = null;
+			return;
 		}
+
 		generation = generatePassword(domainInput, sourcePassword);
 
 		if (generation.TAG === 'Error') {
@@ -96,12 +87,6 @@
 			copyFeedback = result.TAG === 'Ok' ? 'copied' : 'failed';
 		}
 	}
-
-	onDestroy(() => {
-		if (generationTimer !== undefined) {
-			window.clearTimeout(generationTimer);
-		}
-	});
 </script>
 
 <svelte:head>
