@@ -7,3 +7,5 @@ bun.lockb
 
 # Miscellaneous
 /static/
+/src/lib/pwdhash/legacy/md5.js
+/src/lib/pwdhash/legacy/hashed-password.js

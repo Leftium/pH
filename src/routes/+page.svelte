@@ -1,8 +1,12 @@
 <script lang="ts">
-	import { extractDomain } from '#lib/pwdhash/DomainExtractor.gen.tsx';
+	import { generatePassword } from '#lib/pwdhash/Password.gen.tsx';
 
-	const extractedDomain = extractDomain('https://www.example.com');
+	const generatedPassword = generatePassword('https://www.example.com', 'password');
 </script>
 
 <h1>pH v2</h1>
-<p>Generated ReScript output: {extractedDomain}</p>
+{#if generatedPassword.TAG === 'Ok'}
+	<p>Generated ReScript output: {generatedPassword._0}</p>
+{:else}
+	<p>Generation failed: {generatedPassword._0}</p>
+{/if}

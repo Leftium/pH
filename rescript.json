@@ -15,5 +15,8 @@
 		"module": "esmodule",
 		"moduleResolution": "bundler",
 		"generatedFileExtension": ".gen.tsx"
+	},
+	"experimental-features": {
+		"LetUnwrap": true
 	}
 }
