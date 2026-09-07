@@ -3,6 +3,7 @@
 	import { presentConfirmation } from '#lib/pwdhash/Confirmation.gen.tsx';
 	import { copyToClipboard } from '#lib/pwdhash/Clipboard.gen.tsx';
 	import { presentForm } from '#lib/pwdhash/Form.gen.tsx';
+	import { presentGeneratedPassword } from '#lib/pwdhash/GeneratedPassword.gen.tsx';
 
 	let domainInput = $state('');
 	let sourcePassword = $state('');
@@ -15,10 +16,8 @@
 	let initialFocus = $state<'domain' | 'password' | null>(null);
 
 	let form = $derived(presentForm(domainInput, sourcePassword, hasSubmitted));
-	let generatedPasswordDisplay = $derived(
-		form.generatedPassword === undefined || isGeneratedPasswordFocused
-			? (form.generatedPassword ?? '')
-			: `${form.generatedPassword.slice(0, 2)}${'*'.repeat(Math.max(form.generatedPassword.length - 2, 0))}`
+	let generatedPassword = $derived(
+		presentGeneratedPassword(form.generatedPassword, isGeneratedPasswordFocused)
 	);
 	let confirmation = $derived(presentConfirmation(sourcePassword, confirmationInput));
 
@@ -101,20 +100,12 @@
 			<input
 				autocomplete="url"
 				placeholder="https://example.com"
-				aria-invalid={form.domainError === undefined ? undefined : true}
+				aria-invalid={form.domainAriaInvalid}
 				bind:value={domainInput}
 				{@attach focusWhenSelected('domain', initialFocus)}
 				oninput={resetCopyButtonLabel}
 			/>
-			<small>
-				{#if form.domainError}
-					<span role="alert">{form.domainError}</span>
-				{:else if form.resolvedDomain !== undefined}
-					Domain: {form.resolvedDomain}
-				{:else}
-					Enter a site address.
-				{/if}
-			</small>
+			<small><span role={form.domainMessage.role}>{form.domainMessage.text}</span></small>
 		</label>
 
 		<label>
@@ -122,14 +113,12 @@
 			<input
 				type="password"
 				autocomplete="current-password"
-				aria-invalid={form.passwordError === undefined ? undefined : true}
+				aria-invalid={form.passwordAriaInvalid}
 				bind:value={sourcePassword}
 				{@attach focusWhenSelected('password', initialFocus)}
 				oninput={resetCopyButtonLabel}
 			/>
-			<small>
-				{#if form.passwordError}<span role="alert">{form.passwordError}</span>{/if}
-			</small>
+			<small><span role={form.passwordMessage.role}>{form.passwordMessage.text}</span></small>
 		</label>
 
 		<label>
@@ -138,11 +127,7 @@
 				type="password"
 				autocomplete="off"
 				class={confirmation.className}
-				aria-invalid={confirmation.className === 'exact-match'
-					? false
-					: confirmation.className === 'mismatch'
-						? true
-						: undefined}
+				aria-invalid={confirmation.ariaInvalid}
 				bind:value={confirmationInput}
 			/>
 			<small aria-live="polite">{confirmation.message}</small>
@@ -153,7 +138,7 @@
 			<input
 				readonly
 				autocomplete="off"
-				value={generatedPasswordDisplay}
+				value={generatedPassword.value}
 				onfocus={async (event) => {
 					const input = event.currentTarget;
 					isGeneratedPasswordFocused = true;

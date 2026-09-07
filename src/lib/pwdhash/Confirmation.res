@@ -7,6 +7,7 @@ type confirmationState =
 type confirmationPresentation = {
   className: string,
   message: option<string>,
+  ariaInvalid: option<bool>,
 }
 
 @genType
@@ -24,8 +25,8 @@ let getConfirmationState = (~password: string, ~confirmation: string): confirmat
 @genType
 let presentConfirmation = (~password: string, ~confirmation: string): confirmationPresentation =>
   switch getConfirmationState(~password, ~confirmation) {
-  | Empty => {className: "neutral", message: None}
-  | MatchingPrefix => {className: "matching-prefix", message: Some("Passwords match so far.")}
-  | ExactMatch => {className: "exact-match", message: Some("Passwords match.")}
-  | Mismatch => {className: "mismatch", message: Some("Passwords do not match.")}
+  | Empty => {className: "neutral", message: None, ariaInvalid: None}
+  | MatchingPrefix => {className: "matching-prefix", message: Some("Passwords match so far."), ariaInvalid: None}
+  | ExactMatch => {className: "exact-match", message: Some("Passwords match."), ariaInvalid: Some(false)}
+  | Mismatch => {className: "mismatch", message: Some("Passwords do not match."), ariaInvalid: Some(true)}
   }

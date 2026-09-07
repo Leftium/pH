@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { getConfirmationState, presentConfirmation } from './Confirmation.gen.tsx';
 import { copyToClipboard } from './Clipboard.gen.tsx';
 import { presentForm } from './Form.gen.tsx';
+import { presentGeneratedPassword } from './GeneratedPassword.gen.tsx';
 import { generatePassword } from './Password.gen.tsx';
 import { resolve } from './Realm.gen.tsx';
 
@@ -60,10 +61,10 @@ describe('password generation', () => {
 
 describe('confirmation', () => {
 	it.each([
-		['', 'Empty', { className: 'neutral', message: undefined }],
-		['a', 'MatchingPrefix', { className: 'matching-prefix', message: 'Passwords match so far.' }],
-		['abc', 'ExactMatch', { className: 'exact-match', message: 'Passwords match.' }],
-		['ax', 'Mismatch', { className: 'mismatch', message: 'Passwords do not match.' }]
+		['', 'Empty', { className: 'neutral', message: undefined, ariaInvalid: undefined }],
+		['a', 'MatchingPrefix', { className: 'matching-prefix', message: 'Passwords match so far.', ariaInvalid: undefined }],
+		['abc', 'ExactMatch', { className: 'exact-match', message: 'Passwords match.', ariaInvalid: false }],
+		['ax', 'Mismatch', { className: 'mismatch', message: 'Passwords do not match.', ariaInvalid: true }]
 	])('classifies %s against abc', (confirmation, state, presentation) => {
 		expect(getConfirmationState('abc', confirmation)).toEqual(state);
 		expect(presentConfirmation('abc', confirmation)).toEqual(presentation);
@@ -78,18 +79,30 @@ describe('confirmation', () => {
 describe('form presentation', () => {
 	it('only reveals a missing password after submission', () => {
 		expect(presentForm('example.com', '', false)).toMatchObject({
-			resolvedDomain: 'example.com',
 			generatedPassword: undefined,
-			passwordError: undefined
+			passwordMessage: { text: '', role: undefined },
+			passwordAriaInvalid: undefined
 		});
-		expect(presentForm('example.com', '', true).passwordError).toBe('Enter a master password.');
+		expect(presentForm('example.com', '', true)).toMatchObject({
+			passwordMessage: { text: 'Enter a master password.', role: 'alert' },
+			passwordAriaInvalid: true
+		});
 	});
 
 	it('does not provide a generated password when the domain is invalid', () => {
 		expect(presentForm('http://', 'secret', false)).toMatchObject({
 			generatedPassword: undefined,
-			domainError: 'Enter a valid site address.'
+			domainMessage: { text: 'Enter a valid site address.', role: 'alert' },
+			domainAriaInvalid: true
 		});
+	});
+});
+
+describe('generated password presentation', () => {
+	it('masks the password with bullets until the field receives focus', () => {
+		expect(presentGeneratedPassword('4QAIn8SvaW', false)).toEqual({ value: '4Q••••••••' });
+		expect(presentGeneratedPassword('4QAIn8SvaW', true)).toEqual({ value: '4QAIn8SvaW' });
+		expect(presentGeneratedPassword(undefined, false)).toEqual({ value: '' });
 	});
 });
 
