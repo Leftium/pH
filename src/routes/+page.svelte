@@ -32,10 +32,7 @@
 		const password = form.generatedPassword;
 		isCopyPending = true;
 		copyFeedback = '';
-		const result = await copyToClipboard(
-			(text) => navigator.clipboard.writeText(text),
-			password
-		);
+		const result = await copyToClipboard((text) => navigator.clipboard.writeText(text), password);
 		copyFeedback = presentCopyFeedback(result, password);
 		isCopyPending = false;
 	}
@@ -158,7 +155,7 @@
 
 	input[type='password'],
 	.generated-password {
-		font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+		font-family: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 	}
 
 	form small {
