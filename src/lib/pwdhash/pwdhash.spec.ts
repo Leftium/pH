@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { getConfirmationState, presentConfirmation } from './Confirmation.gen.tsx';
-import { copyFeedbackMessage, copyToClipboard } from './Clipboard.gen.tsx';
+import { copyToClipboard } from './Clipboard.gen.tsx';
 import { presentForm } from './Form.gen.tsx';
 import { generatePassword } from './Password.gen.tsx';
 import { resolve } from './Realm.gen.tsx';
@@ -109,8 +109,5 @@ describe('clipboard', () => {
 		const result = await copyToClipboard(() => Promise.reject(new Error('denied')), 'secret');
 
 		expect(result).toEqual({ TAG: 'Error', _0: 'CopyFailed' });
-		expect(copyFeedbackMessage(result)).toBe(
-			'Copy failed. Use the generated-password field instead.'
-		);
 	});
 });

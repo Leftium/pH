@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 	import { presentConfirmation } from '#lib/pwdhash/Confirmation.gen.tsx';
-	import { copyFeedbackMessage, copyToClipboard } from '#lib/pwdhash/Clipboard.gen.tsx';
+	import { copyToClipboard } from '#lib/pwdhash/Clipboard.gen.tsx';
 	import { presentForm } from '#lib/pwdhash/Form.gen.tsx';
 
 	let domainInput = $state('');
@@ -9,7 +9,7 @@
 	let confirmationInput = $state('');
 	let hasSubmitted = $state(false);
 	let isGeneratedPasswordFocused = $state(false);
-	let copyFeedback = $state('');
+	let copyButtonLabel = $state('Copy');
 	let copyAttempt = 0;
 	let bookmarkletHref = $state('');
 	let initialFocus = $state<'domain' | 'password' | null>(null);
@@ -22,14 +22,14 @@
 	);
 	let confirmation = $derived(presentConfirmation(sourcePassword, confirmationInput));
 
-	function resetCopyFeedback() {
+	function resetCopyButtonLabel() {
 		copyAttempt += 1;
-		copyFeedback = '';
+		copyButtonLabel = 'Copy';
 	}
 
 	async function copyGeneratedPassword() {
 		hasSubmitted = true;
-		resetCopyFeedback();
+		resetCopyButtonLabel();
 		const activeCopyAttempt = copyAttempt;
 		if (form.generatedPassword === undefined) {
 			return;
@@ -40,7 +40,7 @@
 			form.generatedPassword
 		);
 		if (activeCopyAttempt === copyAttempt) {
-			copyFeedback = copyFeedbackMessage(result);
+			copyButtonLabel = result.TAG === 'Ok' ? 'Copied' : 'Copy failed - try again';
 		}
 	}
 
@@ -88,7 +88,7 @@
 
 <main>
 	<h1>PwdHash Generator</h1>
-	<p class="intro">Create a unique password for each site without storing your master password.</p>
+	<p class="intro">Generates theft-resistant passwords.</p>
 
 	<form
 		onsubmit={(event) => {
@@ -100,10 +100,11 @@
 			Site Address
 			<input
 				autocomplete="url"
+				placeholder="https://example.com"
 				aria-invalid={form.domainError === undefined ? undefined : true}
 				bind:value={domainInput}
 				{@attach focusWhenSelected('domain', initialFocus)}
-				oninput={resetCopyFeedback}
+				oninput={resetCopyButtonLabel}
 			/>
 			<small>
 				{#if form.domainError}
@@ -124,7 +125,7 @@
 				aria-invalid={form.passwordError === undefined ? undefined : true}
 				bind:value={sourcePassword}
 				{@attach focusWhenSelected('password', initialFocus)}
-				oninput={resetCopyFeedback}
+				oninput={resetCopyButtonLabel}
 			/>
 			<small>
 				{#if form.passwordError}<span role="alert">{form.passwordError}</span>{/if}
@@ -162,8 +163,7 @@
 				onblur={() => (isGeneratedPasswordFocused = false)}
 			/>
 		</label>
-		<button type="submit">Copy</button>
-		<p class="copy-feedback" aria-live="polite">{copyFeedback}</p>
+		<button type="submit">{copyButtonLabel}</button>
 	</form>
 
 	<footer>
@@ -188,6 +188,7 @@
 
 	.intro {
 		color: color-mix(in oklch, var(--nc-text), transparent 40%);
+		text-align: center;
 	}
 
 	label:has(input) {
@@ -216,11 +217,6 @@
 
 	form > button {
 		width: 100%;
-	}
-
-	.copy-feedback {
-		min-height: 1.5rem;
-		margin: 0;
 	}
 
 	footer {

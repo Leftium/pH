@@ -12,10 +12,3 @@ let copyToClipboard: (writeText, string) => promise<result<unit, copyError>> = a
   | _ => Error(CopyFailed)
   }
 }
-
-@genType
-let copyFeedbackMessage = (result: result<unit, copyError>): string =>
-  switch result {
-  | Ok(_) => "Copied."
-  | Error(CopyFailed) => "Copy failed. Use the generated-password field instead."
-  }

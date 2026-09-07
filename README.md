@@ -1,6 +1,6 @@
 # pH
 
-- [ph.leftium.com](https://ph.leftium.com/) makes a unique password for each site from one master password.
+- [ph.leftium.com](https://ph.leftium.com/) generates theft-resistant passwords.
 - Runs entirely in your browser: nothing is stored or sent to a server.
 - Based on the original [PwdHash](http://www.pwdhash.com/).
 
