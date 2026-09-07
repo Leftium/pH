@@ -50,9 +50,11 @@
 	<title>PwdHash Generator</title>
 </svelte:head>
 
-<main>
-	<h1>PwdHash Generator</h1>
-	<p class="intro">Generates theft-resistant passwords.</p>
+<article>
+	<header>
+		<h1>PwdHash Generator</h1>
+		<p>Generates theft-resistant passwords.</p>
+	</header>
 
 	<form
 		onsubmit={(event) => {
@@ -121,23 +123,14 @@
 			Bookmarklet: <a href={bookmarkletHref}>pH</a>
 			<span class="bookmarklet-tooltip">Drag to your bookmarks bar.</span>
 		</span>
+		<span aria-hidden="true"> &middot; </span>
 		<a href="https://github.com/Leftium/pH">Source on GitHub</a>
 	</footer>
-</main>
+</article>
 
 <style>
-	main {
-		border: 1px solid var(--nc-border);
-		border-radius: var(--nc-radius);
-		padding: var(--nc-spacing);
-	}
-
-	h1 {
-		text-align: center;
-	}
-
-	.intro {
-		color: color-mix(in oklch, var(--nc-text), transparent 40%);
+	article > header,
+	article > footer {
 		text-align: center;
 	}
 
@@ -164,14 +157,6 @@
 
 	form > button {
 		width: 100%;
-	}
-
-	footer {
-		margin-top: 2rem;
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: space-between;
-		gap: 0.5rem 1rem;
 	}
 
 	.bookmarklet {
