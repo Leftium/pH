@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createBookmarkletHref, decodeBookmarkletHash } from './Bookmarklet.gen.tsx';
 import { getConfirmationState, presentConfirmation } from './Confirmation.gen.tsx';
-import { copyToClipboard } from './Clipboard.gen.tsx';
+import { copyToClipboard, presentCopyFeedback } from './Clipboard.gen.tsx';
 import { presentForm } from './Form.gen.tsx';
 import { presentGeneratedPassword } from './GeneratedPassword.gen.tsx';
 import { generatePassword } from './Password.gen.tsx';
@@ -154,5 +154,14 @@ describe('clipboard', () => {
 		const result = await copyToClipboard(() => Promise.reject(new Error('denied')), 'secret');
 
 		expect(result).toEqual({ TAG: 'Error', _0: 'CopyFailed' });
+	});
+
+	it('presents masked feedback for completed copy operations', () => {
+		expect(presentCopyFeedback({ TAG: 'Ok', _0: undefined }, '4QAIn8SvaW')).toBe(
+			'Copied 4Q••••••••.'
+		);
+		expect(presentCopyFeedback({ TAG: 'Error', _0: 'CopyFailed' }, '4QAIn8SvaW')).toBe(
+			'Could not copy 4Q••••••••. Try again.'
+		);
 	});
 });

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 	import { presentConfirmation } from '#lib/pwdhash/Confirmation.gen.tsx';
-	import { copyToClipboard } from '#lib/pwdhash/Clipboard.gen.tsx';
+	import { copyToClipboard, presentCopyFeedback } from '#lib/pwdhash/Clipboard.gen.tsx';
 	import { createBookmarkletHref, decodeBookmarkletHash } from '#lib/pwdhash/Bookmarklet.gen.tsx';
 	import { presentForm } from '#lib/pwdhash/Form.gen.tsx';
 	import { presentGeneratedPassword } from '#lib/pwdhash/GeneratedPassword.gen.tsx';
@@ -11,8 +11,8 @@
 	let confirmationInput = $state('');
 	let hasSubmitted = $state(false);
 	let isGeneratedPasswordFocused = $state(false);
-	let copyButtonLabel = $state('Copy');
-	let copyAttempt = 0;
+	let copyFeedback = $state('');
+	let isCopyPending = $state(false);
 	let bookmarkletHref = $state('');
 	let domainInputElement: HTMLInputElement;
 	let passwordInputElement: HTMLInputElement;
@@ -23,26 +23,21 @@
 	);
 	let confirmation = $derived(presentConfirmation(sourcePassword, confirmationInput));
 
-	function resetCopyButtonLabel() {
-		copyAttempt += 1;
-		copyButtonLabel = 'Copy';
-	}
-
 	async function copyGeneratedPassword() {
 		hasSubmitted = true;
-		resetCopyButtonLabel();
-		const activeCopyAttempt = copyAttempt;
-		if (form.generatedPassword === undefined) {
+		if (isCopyPending || form.generatedPassword === undefined) {
 			return;
 		}
 
+		const password = form.generatedPassword;
+		isCopyPending = true;
+		copyFeedback = '';
 		const result = await copyToClipboard(
 			(text) => navigator.clipboard.writeText(text),
-			form.generatedPassword
+			password
 		);
-		if (activeCopyAttempt === copyAttempt) {
-			copyButtonLabel = result.TAG === 'Ok' ? 'Copied' : 'Copy failed - try again';
-		}
+		copyFeedback = presentCopyFeedback(result, password);
+		isCopyPending = false;
 	}
 
 	onMount(() => {
@@ -76,7 +71,6 @@
 				aria-invalid={form.domainAriaInvalid}
 				bind:value={domainInput}
 				bind:this={domainInputElement}
-				oninput={resetCopyButtonLabel}
 			/>
 			<small><span role={form.domainMessage.role}>{form.domainMessage.text}</span></small>
 		</label>
@@ -89,7 +83,6 @@
 				aria-invalid={form.passwordAriaInvalid}
 				bind:value={sourcePassword}
 				bind:this={passwordInputElement}
-				oninput={resetCopyButtonLabel}
 			/>
 			<small><span role={form.passwordMessage.role}>{form.passwordMessage.text}</span></small>
 		</label>
@@ -120,8 +113,9 @@
 				}}
 				onblur={() => (isGeneratedPasswordFocused = false)}
 			/>
+			<small>{copyFeedback}</small>
 		</label>
-		<button type="submit">{copyButtonLabel}</button>
+		<button type="submit" disabled={isCopyPending}>Copy</button>
 	</form>
 
 	<footer>

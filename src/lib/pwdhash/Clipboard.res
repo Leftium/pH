@@ -12,3 +12,12 @@ let copyToClipboard: (writeText, string) => promise<result<unit, copyError>> = a
   | _ => Error(CopyFailed)
   }
 }
+
+@genType
+let presentCopyFeedback = (result: result<unit, copyError>, password: string): string => {
+  let maskedPassword = GeneratedPassword.maskPassword(password)
+  switch result {
+  | Ok() => `Copied ${maskedPassword}.`
+  | Error(CopyFailed) => `Could not copy ${maskedPassword}. Try again.`
+  }
+}
