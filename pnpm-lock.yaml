@@ -19,8 +19,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.10.0(supports-color@8.1.1))
       '@leftium/nimble.css':
-        specifier: ^0.20.0
-        version: 0.20.0
+        specifier: ^0.21.0
+        version: 0.21.0
       '@sveltejs/adapter-static':
         specifier: ^4.0.0-next.4
         version: 4.0.0-next.4(@sveltejs/kit@3.0.0-next.25(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0(@typescript-eslint/types@8.69.0))(vite@8.2.2(@types/node@24.13.3)))(svelte@5.57.0(@typescript-eslint/types@8.69.0))(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)))
@@ -168,8 +168,8 @@ packages:
   '@keyv/serialize@1.1.1':
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
 
-  '@leftium/nimble.css@0.20.0':
-    resolution: {integrity: sha512-z2igR/5SFrNKwSz9vO4OGBYi7JKBOF3emz0wQHonl08v4Z4n00Qiay+iZAe4qZXKqGb8u3q1wwglu23Jxfzegg==}
+  '@leftium/nimble.css@0.21.0':
+    resolution: {integrity: sha512-ySeDm5Gn0kUoE9vFbTLytv0QY6eRc2i14WTq9HBG03UZ6oE2hkUAbGw6ZE/a1Vo62PSXGIB7ER7W2goNaFo6sg==}
 
   '@oxc-project/types@0.148.0':
     resolution: {integrity: sha512-Nm4s/jB+4FpFsPhWGEC4h7rzksesmtnMXomo6rCMcg/b8zLQuOziRgkCS1fxDCXOlJB/6Q8oABOZ/OP6RIPj9A==}
@@ -1371,7 +1371,7 @@ snapshots:
 
   '@keyv/serialize@1.1.1': {}
 
-  '@leftium/nimble.css@0.20.0': {}
+  '@leftium/nimble.css@0.21.0': {}
 
   '@oxc-project/types@0.148.0': {}
 

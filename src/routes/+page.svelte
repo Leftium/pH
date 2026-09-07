@@ -191,14 +191,6 @@
 		text-align: center;
 	}
 
-	label:has(input) {
-		font-weight: 600;
-	}
-
-	label > :is(input, small, em) {
-		font-weight: 400;
-	}
-
 	.matching-prefix {
 		background: light-dark(#fff7cc, oklch(0.3 0.05 90));
 	}
