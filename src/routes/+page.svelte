@@ -156,6 +156,7 @@
 		background: light-dark(#ffe1e6, oklch(0.3 0.05 25));
 	}
 
+	input[type='password'],
 	.generated-password {
 		font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 	}
