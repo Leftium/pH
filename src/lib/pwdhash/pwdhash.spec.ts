@@ -11,7 +11,10 @@ import { resolve } from './Realm.gen.tsx';
 describe('bookmarklet', () => {
 	it.each([
 		['', ''],
-		['https%3A%2F%2Fexample.com%2Faccount%3Ftab%3Dsecurity', 'https://example.com/account?tab=security'],
+		[
+			'https%3A%2F%2Fexample.com%2Faccount%3Ftab%3Dsecurity',
+			'https://example.com/account?tab=security'
+		],
 		['%E0%A4%A', '%E0%A4%A']
 	])('decodes hash value %s', (hash, expected) => {
 		expect(decodeBookmarkletHash(hash)).toBe(expected);
@@ -79,9 +82,21 @@ describe('password generation', () => {
 describe('confirmation', () => {
 	it.each([
 		['', 'Empty', { className: 'neutral', message: undefined, ariaInvalid: undefined }],
-		['a', 'MatchingPrefix', { className: 'matching-prefix', message: 'Passwords match so far.', ariaInvalid: undefined }],
-		['abc', 'ExactMatch', { className: 'exact-match', message: 'Passwords match.', ariaInvalid: false }],
-		['ax', 'Mismatch', { className: 'mismatch', message: 'Passwords do not match.', ariaInvalid: true }]
+		[
+			'a',
+			'MatchingPrefix',
+			{ className: 'matching-prefix', message: 'Passwords match so far.', ariaInvalid: undefined }
+		],
+		[
+			'abc',
+			'ExactMatch',
+			{ className: 'exact-match', message: 'Passwords match.', ariaInvalid: false }
+		],
+		[
+			'ax',
+			'Mismatch',
+			{ className: 'mismatch', message: 'Passwords do not match.', ariaInvalid: true }
+		]
 	])('classifies %s against abc', (confirmation, state, presentation) => {
 		expect(getConfirmationState('abc', confirmation)).toEqual(state);
 		expect(presentConfirmation('abc', confirmation)).toEqual(presentation);
