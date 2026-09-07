@@ -5,3 +5,9 @@
 </script>
 
 {@render children()}
+
+<style>
+	:global(:root) {
+		--nc-content-width: 45ch;
+	}
+</style>

@@ -96,20 +96,16 @@
 			void copyGeneratedPassword();
 		}}
 	>
-		<div class="field">
-			<label for="domain">Site Address</label>
+		<label>
+			Site Address
 			<input
-				id="domain"
-				name="domain"
-				type="text"
 				autocomplete="url"
 				aria-invalid={form.domainError === undefined ? undefined : true}
-				aria-describedby="domain-status"
 				bind:value={domainInput}
 				{@attach focusWhenSelected('domain', initialFocus)}
 				oninput={resetCopyFeedback}
 			/>
-			<p id="domain-status" class="field-status" class:error={form.domainError !== undefined}>
+			<small>
 				{#if form.domainError}
 					<span role="alert">{form.domainError}</span>
 				{:else if form.resolvedDomain !== undefined}
@@ -117,50 +113,46 @@
 				{:else}
 					Enter a site address.
 				{/if}
-			</p>
-		</div>
+			</small>
+		</label>
 
-		<div class="field">
-			<label for="source-password">Master Password</label>
+		<label>
+			Master Password
 			<input
-				id="source-password"
-				name="source-password"
 				type="password"
 				autocomplete="current-password"
 				aria-invalid={form.passwordError === undefined ? undefined : true}
-				aria-describedby="password-status"
 				bind:value={sourcePassword}
 				{@attach focusWhenSelected('password', initialFocus)}
 				oninput={resetCopyFeedback}
 			/>
-			<p id="password-status" class="field-status" class:error={form.passwordError !== undefined}>
+			<small>
 				{#if form.passwordError}<span role="alert">{form.passwordError}</span>{/if}
-			</p>
-		</div>
+			</small>
+		</label>
 
-		<div class="field">
-			<label for="confirmation">Confirm Master Password <span>(Optional)</span></label>
+		<label>
+			Confirm Master Password <em>(Optional)</em>
 			<input
-				id="confirmation"
-				name="confirmation"
 				type="password"
 				autocomplete="off"
 				class={confirmation.className}
+				aria-invalid={confirmation.className === 'exact-match'
+					? false
+					: confirmation.className === 'mismatch'
+						? true
+						: undefined}
 				bind:value={confirmationInput}
 			/>
-			<p class="field-status" aria-live="polite">{confirmation.message}</p>
-		</div>
+			<small aria-live="polite">{confirmation.message}</small>
+		</label>
 
-		<div class="field">
-			<label for="generated-password">Generated Password</label>
+		<label>
+			Generated Password
 			<input
-				id="generated-password"
-				name="generated-password"
-				type="text"
 				readonly
 				autocomplete="off"
 				value={generatedPasswordDisplay}
-				aria-label="Generated password. Focus to reveal the full value."
 				onfocus={async (event) => {
 					const input = event.currentTarget;
 					isGeneratedPasswordFocused = true;
@@ -169,119 +161,60 @@
 				}}
 				onblur={() => (isGeneratedPasswordFocused = false)}
 			/>
-			<div class="actions">
-				<button type="submit">Copy</button>
-				<p class="copy-feedback" aria-live="polite">{copyFeedback}</p>
-			</div>
-		</div>
+		</label>
+		<button type="submit">Copy</button>
+		<p class="copy-feedback" aria-live="polite">{copyFeedback}</p>
 	</form>
 
 	<footer>
-		<div class="footer-row">
-			<span class="bookmarklet">
-				Bookmarklet: <a href={bookmarkletHref} aria-describedby="bookmarklet-help">pH</a>
-				<span id="bookmarklet-help" class="bookmarklet-tooltip" role="tooltip">
-					Drag to your bookmarks bar.
-				</span>
-			</span>
-			<a href="https://github.com/Leftium/pH">Source on GitHub</a>
-		</div>
+		<span class="bookmarklet">
+			Bookmarklet: <a href={bookmarkletHref}>pH</a>
+			<span class="bookmarklet-tooltip">Drag to your bookmarks bar.</span>
+		</span>
+		<a href="https://github.com/Leftium/pH">Source on GitHub</a>
 	</footer>
 </main>
 
 <style>
 	main {
-		max-width: 32rem;
-		margin: 3rem auto;
-		padding: 2rem 1.5rem;
-		border: 1px solid #d9dee7;
-		border-radius: 0.75rem;
-		box-shadow: 0 0.5rem 1.5rem rgb(28 38 55 / 8%);
+		border: 1px solid var(--nc-border);
+		border-radius: var(--nc-radius);
+		padding: var(--nc-spacing);
 	}
 
 	h1 {
-		margin-top: 0;
+		text-align: center;
 	}
 
 	.intro {
-		margin: -0.5rem 0 1.5rem;
-		color: #4b5563;
+		color: color-mix(in oklch, var(--nc-text), transparent 40%);
 	}
 
-	form,
-	.field {
-		display: grid;
-		gap: 0.25rem;
+	label:has(input) {
+		font-weight: 600;
 	}
 
-	form {
-		gap: 1.25rem;
-	}
-
-	input,
-	button {
-		font: inherit;
-	}
-
-	input {
-		padding: 0.5rem;
-		border: 1px solid #aeb7c4;
-		border-radius: 0.35rem;
-	}
-
-	.field label,
-	.field input,
-	.actions button {
-		margin: 0;
-	}
-
-	button {
-		padding: 0.5rem 1rem;
-		border: 0;
-		border-radius: 0.35rem;
-		background: #2457a6;
-		color: white;
-		cursor: pointer;
-	}
-
-	button:hover {
-		background: #1c4584;
-	}
-
-	label span {
-		font-style: italic;
-		font-weight: normal;
+	label > :is(input, small, em) {
+		font-weight: 400;
 	}
 
 	.matching-prefix {
-		background: #fff7cc;
+		background: light-dark(#fff7cc, oklch(0.3 0.05 90));
 	}
 
-	.exact-match {
-		background: #ddf7df;
+	input[aria-invalid='false'] {
+		background: light-dark(#ddf7df, oklch(0.3 0.05 145));
 	}
 
-	.mismatch,
 	input[aria-invalid='true'] {
-		background: #ffe1e6;
+		background: light-dark(#ffe1e6, oklch(0.3 0.05 25));
 	}
 
-	.field-status {
+	form small {
 		min-height: 1.5rem;
-		margin: 0;
-		color: #4b5563;
 	}
 
-	.field-status.error {
-		color: #a40022;
-	}
-
-	.actions {
-		display: grid;
-		gap: 0.25rem;
-	}
-
-	.actions button {
+	form > button {
 		width: 100%;
 	}
 
@@ -292,9 +225,6 @@
 
 	footer {
 		margin-top: 2rem;
-	}
-
-	.footer-row {
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: space-between;
