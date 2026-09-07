@@ -7,12 +7,11 @@ export function parseAddress(input) {
 
 	if (
 		parsed.domain === null ||
-		parsed.hostname === null ||
 		parsed.isIp ||
 		parsed.publicSuffix === 'invalid'
 	) {
 		return null;
 	}
 
-	return { domain: parsed.domain, hostname: parsed.hostname };
+	return parsed.domain;
 }

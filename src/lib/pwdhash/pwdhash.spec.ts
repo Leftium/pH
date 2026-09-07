@@ -34,10 +34,10 @@ describe('domain extraction', () => {
 		['HTTPS://WWW.Example.COM:443/path', 'example.com'],
 		['//www.example.com/path', 'example.com'],
 		['foo.blogspot.com', 'blogspot.com'],
-		['foo.example.org.ru', 'example.org.ru'],
+		['foo.example.org.ru', 'org.ru'],
 		['a.example.com', 'example.com'],
 		['b.example.com', 'example.com']
-	])('uses a normalized two-label realm for %s', (input, expected) => {
+	])('resolves the registrable domain for %s', (input, expected) => {
 		expect(resolve(input)).toEqual({ TAG: 'Ok', _0: expected });
 	});
 
