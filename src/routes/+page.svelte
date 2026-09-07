@@ -102,6 +102,7 @@
 		<label>
 			Generated Password
 			<input
+				class="generated-password"
 				readonly
 				autocomplete="off"
 				value={generatedPassword.value}
@@ -153,6 +154,10 @@
 
 	input[aria-invalid='true'] {
 		background: light-dark(#ffe1e6, oklch(0.3 0.05 25));
+	}
+
+	.generated-password {
+		font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 	}
 
 	form small {
