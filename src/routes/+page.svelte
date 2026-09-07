@@ -2,6 +2,10 @@
 	import { onMount, tick } from 'svelte';
 	import { presentConfirmation } from '#lib/pwdhash/Confirmation.gen.tsx';
 	import { copyToClipboard } from '#lib/pwdhash/Clipboard.gen.tsx';
+	import {
+		createBookmarkletHref,
+		decodeBookmarkletHash
+	} from '#lib/pwdhash/Bookmarklet.gen.tsx';
 	import { presentForm } from '#lib/pwdhash/Form.gen.tsx';
 	import { presentGeneratedPassword } from '#lib/pwdhash/GeneratedPassword.gen.tsx';
 
@@ -43,24 +47,6 @@
 		}
 	}
 
-	function bookmarkletAddress() {
-		const hash = window.location.hash.slice(1);
-		if (hash === '') {
-			return '';
-		}
-
-		try {
-			return decodeURIComponent(hash);
-		} catch {
-			return hash;
-		}
-	}
-
-	function createBookmarkletHref(generatorUrl: string) {
-		const script = `window.open(${JSON.stringify(generatorUrl)}+'\\x23'+encodeURIComponent(location.href),'_blank','noopener')`;
-		return `javascript:${script}`;
-	}
-
 	function focusWhenSelected(
 		target: 'domain' | 'password',
 		selected: 'domain' | 'password' | null
@@ -75,7 +61,7 @@
 	onMount(() => {
 		const generatorUrl = `${window.location.origin}${window.location.pathname}${window.location.search}`;
 		bookmarkletHref = createBookmarkletHref(generatorUrl);
-		const initialAddress = bookmarkletAddress();
+		const initialAddress = decodeBookmarkletHash(window.location.hash.slice(1));
 		domainInput = initialAddress;
 		initialFocus = initialAddress === '' ? 'domain' : 'password';
 	});

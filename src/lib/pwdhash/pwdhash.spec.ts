@@ -1,11 +1,28 @@
 import { describe, expect, it } from 'vitest';
 
+import { createBookmarkletHref, decodeBookmarkletHash } from './Bookmarklet.gen.tsx';
 import { getConfirmationState, presentConfirmation } from './Confirmation.gen.tsx';
 import { copyToClipboard } from './Clipboard.gen.tsx';
 import { presentForm } from './Form.gen.tsx';
 import { presentGeneratedPassword } from './GeneratedPassword.gen.tsx';
 import { generatePassword } from './Password.gen.tsx';
 import { resolve } from './Realm.gen.tsx';
+
+describe('bookmarklet', () => {
+	it.each([
+		['', ''],
+		['https%3A%2F%2Fexample.com%2Faccount%3Ftab%3Dsecurity', 'https://example.com/account?tab=security'],
+		['%E0%A4%A', '%E0%A4%A']
+	])('decodes hash value %s', (hash, expected) => {
+		expect(decodeBookmarkletHash(hash)).toBe(expected);
+	});
+
+	it('creates an escaped bookmarklet URL', () => {
+		expect(createBookmarkletHref('https://example.com/pH?mode="safe"')).toBe(
+			"javascript:window.open(\"https://example.com/pH?mode=\\\"safe\\\"\"+'\\x23'+encodeURIComponent(location.href),'_blank','noopener')"
+		);
+	});
+});
 
 describe('domain extraction', () => {
 	it.each([
