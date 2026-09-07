@@ -2,10 +2,7 @@
 	import { onMount, tick } from 'svelte';
 	import { presentConfirmation } from '#lib/pwdhash/Confirmation.gen.tsx';
 	import { copyToClipboard } from '#lib/pwdhash/Clipboard.gen.tsx';
-	import {
-		createBookmarkletHref,
-		decodeBookmarkletHash
-	} from '#lib/pwdhash/Bookmarklet.gen.tsx';
+	import { createBookmarkletHref, decodeBookmarkletHash } from '#lib/pwdhash/Bookmarklet.gen.tsx';
 	import { presentForm } from '#lib/pwdhash/Form.gen.tsx';
 	import { presentGeneratedPassword } from '#lib/pwdhash/GeneratedPassword.gen.tsx';
 
@@ -17,7 +14,8 @@
 	let copyButtonLabel = $state('Copy');
 	let copyAttempt = 0;
 	let bookmarkletHref = $state('');
-	let initialFocus = $state<'domain' | 'password' | null>(null);
+	let domainInputElement: HTMLInputElement;
+	let passwordInputElement: HTMLInputElement;
 
 	let form = $derived(presentForm(domainInput, sourcePassword, hasSubmitted));
 	let generatedPassword = $derived(
@@ -47,23 +45,12 @@
 		}
 	}
 
-	function focusWhenSelected(
-		target: 'domain' | 'password',
-		selected: 'domain' | 'password' | null
-	) {
-		return (element: HTMLInputElement) => {
-			if (target === selected) {
-				element.focus();
-			}
-		};
-	}
-
 	onMount(() => {
 		const generatorUrl = `${window.location.origin}${window.location.pathname}${window.location.search}`;
 		bookmarkletHref = createBookmarkletHref(generatorUrl);
 		const initialAddress = decodeBookmarkletHash(window.location.hash.slice(1));
 		domainInput = initialAddress;
-		initialFocus = initialAddress === '' ? 'domain' : 'password';
+		(initialAddress === '' ? domainInputElement : passwordInputElement).focus();
 	});
 </script>
 
@@ -88,7 +75,7 @@
 				placeholder="https://example.com"
 				aria-invalid={form.domainAriaInvalid}
 				bind:value={domainInput}
-				{@attach focusWhenSelected('domain', initialFocus)}
+				bind:this={domainInputElement}
 				oninput={resetCopyButtonLabel}
 			/>
 			<small><span role={form.domainMessage.role}>{form.domainMessage.text}</span></small>
@@ -101,7 +88,7 @@
 				autocomplete="current-password"
 				aria-invalid={form.passwordAriaInvalid}
 				bind:value={sourcePassword}
-				{@attach focusWhenSelected('password', initialFocus)}
+				bind:this={passwordInputElement}
 				oninput={resetCopyButtonLabel}
 			/>
 			<small><span role={form.passwordMessage.role}>{form.passwordMessage.text}</span></small>
