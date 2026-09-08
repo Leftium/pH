@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { createBookmarkletHref, decodeAddressFromHash } from './Bookmarklet.gen.tsx';
+import {
+	createBookmarkletHref,
+	decodeAddressFromHash,
+	getInitialAddress
+} from './Bookmarklet.gen.tsx';
 import { copyToClipboard, formatCopyFeedback } from './Clipboard.gen.tsx';
 import { getFormView } from './GeneratorForm.gen.tsx';
 import { formatGeneratedPassword } from './GeneratedPassword.gen.tsx';
@@ -22,6 +26,30 @@ describe('bookmarklet', () => {
 		expect(createBookmarkletHref('https://example.com/pH?mode="safe"')).toBe(
 			"javascript:window.open(\"https://example.com/pH?mode=\\\"safe\\\"\"+'\\x23'+encodeURIComponent(location.href),'_blank','noopener')"
 		);
+	});
+
+	it('uses the current hostname for a normal load', () => {
+		expect(getInitialAddress('', 'ph.leftium.com')).toEqual({
+			addressInput: 'ph.leftium.com',
+			focusPassword: false
+		});
+	});
+
+	it.each(['localhost', '127.0.0.1', '::1'])(
+		'falls back to example.com when %s is not a password realm',
+		(currentHostname) => {
+			expect(getInitialAddress('', currentHostname)).toEqual({
+				addressInput: 'example.com',
+				focusPassword: false
+			});
+		}
+	);
+
+	it('prefers a bookmarklet address and shifts focus to the password', () => {
+		expect(getInitialAddress('https://accounts.example.com/login', 'ph.leftium.com')).toEqual({
+			addressInput: 'https://accounts.example.com/login',
+			focusPassword: true
+		});
 	});
 });
 

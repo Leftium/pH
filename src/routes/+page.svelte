@@ -2,7 +2,11 @@
 	import { onMount, tick } from 'svelte';
 	import { getConfirmationView } from './PasswordConfirmation.gen.tsx';
 	import { copyToClipboard, formatCopyFeedback } from './Clipboard.gen.tsx';
-	import { createBookmarkletHref, decodeAddressFromHash } from './Bookmarklet.gen.tsx';
+	import {
+		createBookmarkletHref,
+		decodeAddressFromHash,
+		getInitialAddress
+	} from './Bookmarklet.gen.tsx';
 	import { getFormView } from './GeneratorForm.gen.tsx';
 	import { formatGeneratedPassword } from './GeneratedPassword.gen.tsx';
 
@@ -16,6 +20,14 @@
 	let bookmarkletHref = $state('');
 	let addressInputElement: HTMLInputElement;
 	let passwordInputElement: HTMLInputElement;
+
+	function captureAddressInput(element: HTMLInputElement) {
+		addressInputElement = element;
+	}
+
+	function capturePasswordInput(element: HTMLInputElement) {
+		passwordInputElement = element;
+	}
 
 	let form = $derived(getFormView(addressInput, masterPassword, hasSubmitted));
 	let generatedPassword = $derived(
@@ -47,12 +59,24 @@
 		}
 	}
 
-	onMount(() => {
+	async function initializePage() {
 		const generatorUrl = `${window.location.origin}${window.location.pathname}${window.location.search}`;
 		bookmarkletHref = createBookmarkletHref(generatorUrl);
 		const addressFromHash = decodeAddressFromHash(window.location.hash.slice(1));
-		addressInput = addressFromHash;
-		(addressFromHash === '' ? addressInputElement : passwordInputElement).focus();
+		const initialAddress = getInitialAddress(addressFromHash, window.location.hostname);
+		addressInput = initialAddress.addressInput;
+		await tick();
+
+		if (initialAddress.focusPassword) {
+			passwordInputElement.focus();
+		} else {
+			addressInputElement.focus();
+			addressInputElement.select();
+		}
+	}
+
+	onMount(() => {
+		void initializePage();
 	});
 </script>
 
@@ -74,7 +98,7 @@
 				placeholder="https://example.com"
 				aria-invalid={form.addressAriaInvalid}
 				bind:value={addressInput}
-				bind:this={addressInputElement}
+				{@attach captureAddressInput}
 			/>
 			<small><span role={form.addressMessage.role}>{form.addressMessage.text}</span></small>
 		</label>
@@ -88,7 +112,7 @@
 				class="enpass-search-bypass"
 				aria-invalid={form.passwordAriaInvalid}
 				bind:value={masterPassword}
-				bind:this={passwordInputElement}
+				{@attach capturePasswordInput}
 				onkeydown={handlePasswordKeydown}
 			/>
 			<small><span role={form.passwordMessage.role}>{form.passwordMessage.text}</span></small>

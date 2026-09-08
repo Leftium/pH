@@ -3,6 +3,11 @@
 @val external decodeUriComponent: string => string = "decodeURIComponent"
 @val external jsonStringify: string => string = "JSON.stringify"
 
+type initialAddress = {
+  addressInput: string,
+  focusPassword: bool,
+}
+
 @genType
 let decodeAddressFromHash = (hash: string): string =>
   if hash == "" {
@@ -13,6 +18,18 @@ let decodeAddressFromHash = (hash: string): string =>
     } catch {
     | _ => hash
     }
+  }
+
+@genType
+let getInitialAddress = (~addressFromHash: string, ~currentHostname: string): initialAddress =>
+  if addressFromHash != "" {
+    {addressInput: addressFromHash, focusPassword: true}
+  } else {
+    let addressInput = switch Realm.resolve(currentHostname) {
+    | Ok(_) => currentHostname
+    | Error(_) => "example.com"
+    }
+    {addressInput, focusPassword: false}
   }
 
 @genType
