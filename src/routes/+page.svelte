@@ -66,12 +66,7 @@
 		<p>Generates theft-resistant passwords.</p>
 	</header>
 
-	<form
-		onsubmit={(event) => {
-			event.preventDefault();
-			void copyGeneratedPassword();
-		}}
-	>
+	<div class="generator-controls">
 		<label>
 			Site Address
 			<input
@@ -127,8 +122,10 @@
 			/>
 			<small>{copyFeedback}</small>
 		</label>
-		<button type="submit" disabled={isCopyPending}>Copy</button>
-	</form>
+		<button type="button" disabled={isCopyPending} onclick={() => void copyGeneratedPassword()}
+			>Copy</button
+		>
+	</div>
 
 	<footer>
 		<span class="bookmarklet">
@@ -163,11 +160,11 @@
 		font-family: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 	}
 
-	form small {
+	.generator-controls small {
 		min-height: 1.5rem;
 	}
 
-	form > button {
+	.generator-controls > button {
 		width: 100%;
 	}
 
