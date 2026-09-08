@@ -133,9 +133,9 @@
 				{/if}
 			</small>
 		</label>
-		<button type="button" disabled={isCopyPending} onclick={() => void copyGeneratedPassword()}
-			>Copy</button
-		>
+		<button type="button" disabled={isCopyPending} onclick={() => void copyGeneratedPassword()}>
+			Copy
+		</button>
 	</form>
 
 	<footer>
