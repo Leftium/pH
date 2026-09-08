@@ -128,8 +128,9 @@
 			/>
 			<small>
 				{#if copyFeedback}
-					{copyFeedback.prefix}<span class="password-text">{copyFeedback.password}</span
-					>{copyFeedback.suffix}
+					{copyFeedback.prefix}
+					<span class="password-text">{copyFeedback.password}</span>
+					{copyFeedback.suffix}
 				{/if}
 			</small>
 		</label>
