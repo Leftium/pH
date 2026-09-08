@@ -15,10 +15,15 @@ type parsedAddress = {
 @module("tldts-icann")
 external parseAddress: (string, parseOptions) => parsedAddress = "parse"
 
+let normalizeAddress = address =>
+  address->String.startsWith("//") ? `https:${address}` : address
+
 let extractDomain = addressInput => {
-  let trimmedAddress = addressInput->String.trim
-  let normalizedAddress = trimmedAddress->String.startsWith("//") ? `https:${trimmedAddress}` : trimmedAddress
-  let parsedAddress = parseAddress(normalizedAddress, {detectSpecialUse: true})
+  let parsedAddress =
+    addressInput
+    ->String.trim
+    ->normalizeAddress
+    ->parseAddress({detectSpecialUse: true})
 
   switch (parsedAddress.domain->Nullable.toOption, parsedAddress.publicSuffix->Nullable.toOption) {
   | (Some(_), _) if parsedAddress.isIp => None
@@ -32,7 +37,7 @@ let resolve = (addressInput: string): result<string, resolutionError> =>
   if addressInput->String.trim == "" {
     Error(MissingAddress)
   } else {
-    switch extractDomain(addressInput) {
+    switch addressInput->extractDomain {
     | Some(domain) => Ok(domain)
     | None => Error(InvalidAddress)
     }

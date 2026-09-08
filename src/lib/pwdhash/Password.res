@@ -10,6 +10,6 @@ let generateForRealm = (~realm: string, ~masterPassword: string): string =>
 
 @genType
 let generatePassword = (~addressInput: string, ~masterPassword: string): result<string, generationError> => {
-  let? Ok(realm) = Realm.resolve(addressInput)
+  let? Ok(realm) = addressInput->Realm.resolve
   Ok(generateForRealm(~realm, ~masterPassword))
 }
