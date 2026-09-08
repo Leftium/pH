@@ -37,11 +37,32 @@ Three pH boundaries illustrate different needs:
 
 | Boundary | Current behavior | Proposed experiment |
 | --- | --- | --- |
-| [Clipboard](../src/routes/Clipboard.res) | `promise<result<unit, copyError>>`; its genType API exposes the Result variant. [The caller](../src/routes/+page.svelte) passes it back to `formatCopyFeedback` without inspecting tags. | Expose a Wellcrafted-compatible Result and adapt the formatter's inbound argument too. Assess the benefit rather than assuming existing call-site boilerplate. |
+| [Clipboard](../src/routes/Clipboard.res) | `promise<result<unit, copyError>>`; its genType API exposes the Result variant. [The caller](../src/routes/+page.svelte) passes it back to `formatCopyFeedback` without inspecting tags. | Keep the Result inside one RS operation and return structured feedback with a separately renderable masked password. Move bidirectional Result conversion to a dedicated fixture. |
 | [GeneratorForm](../src/routes/GeneratorForm.res) and [PasswordConfirmation](../src/routes/PasswordConfirmation.res) | Useful view records with simple optional fields already exposed naturally by genType. | Keep these as an identity/raw-genType baseline. Migrating an option to the managed representation is an explicit API change. |
 | [Domain message](../src/routes/GeneratorForm.res) | Plain text such as `Domain: example.com`. | Later, add rich formatting through HAST. This adds capability; it does not remove an existing markup reconstruction system. |
 
 The intended payoff is a stable public contract, reusable composition, and clear unsupported-case diagnostics. Manual adapters may be a sufficient final product.
+
+## Recommended application architecture
+
+Recommend a ReScript application core with a thin TS/framework shell. pH is the concrete example: ReScript owns validation, domain operations, and presentation calculations; Svelte owns reactive state, rendering, event handling, and browser capabilities. Mog remains bidirectional and also supports applications where TS owns orchestration.
+
+```text
+TS/Svelte shell
+  -> event facts and narrow capability callbacks
+  -> RS core: coherent operations, intermediate domain values
+  -> output/view data
+  -> Mog toTS where representation changes are useful
+  -> TS/Svelte shell renders
+```
+
+Prefer coarse-grained boundaries around coherent operations. Keep intermediate domain values inside ReScript when the TS consumer does not need to inspect them. Transmute values because the consumer needs them, not merely because control temporarily crosses languages. This guides API design and examples; Mog does not infer operation boundaries or combine operations automatically.
+
+Pass primitives and narrow capabilities where practical. pH's clipboard writer is `string => promise<unit>`; the shell supplies the browser implementation. Extract relevant event facts in the shell instead of passing DOM events or elements into the core. Full third-party bindings remain appropriate when ReScript needs to own that API, but generating broad browser or TS-library bindings is not part of the manual proof.
+
+Return enough structure for rendering. Clipboard feedback must expose the masked password separately so Svelte can choose spans, other tags, and classes without parsing a sentence or repeating success/failure wording. The internal Result stays in RS. A small output record is sufficient for this requirement; the optional HAST integration supports richer RS-authored markup later.
+
+Select Mog boundaries deliberately. A coherent operation returning an already ergonomic genType shape may need no transmutation. Dedicated fixtures establish adapter correctness; real consumers of richer output establish application benefit.
 
 ## Decisions and scope
 
@@ -51,7 +72,9 @@ The intended payoff is a stable public contract, reusable composition, and clear
 | Use explicit Option envelopes by default on managed boundaries. | Presence remains distinct from the payload, including nested absence, `null`, and `undefined`. |
 | Aim for structural Wellcrafted Result compatibility. | Consumers can use plain objects without installing Wellcrafted. Divergence requires a concrete benefit and an explicit policy. |
 | Cover a small core and compose custom adapters. | Edge cases should not force the core to model the entire language. |
-| Support both directions, prioritize RS-to-TS ergonomics. | Rich return values motivate the project; arguments and callbacks still require the appropriate inverse conversions. |
+| Support both directions, prioritize RS-to-TS ergonomics and conversion efficiency. | Rich output/view values motivate the primary architecture; arguments and callbacks still require first-class inbound conversion where needed. |
+| Minimize crossings of intermediate domain values. | Coherent RS operations keep values internal when TS has no use for them. |
+| Keep platform/framework complexity in the shell where practical. | Primitive event facts and narrow capabilities keep application boundaries small. |
 | Keep conversions with the ReScript type owner where practical. | Internal representation changes should not leak into a TS facade. |
 | Prove manual use before adding metadata or code generation. | Automation must address observed repetition. |
 | Keep rich content and framework glue optional. | The core must work without HAST, Svelte, or SvelteKit. |
@@ -150,6 +173,8 @@ Record fields containing managed options are required envelope fields unless the
 
 Do not rebuild identity-compatible values merely for consistency. Managed Option and Result envelopes are deliberate representation choices even when a raw genType representation was already usable. Converted containers may allocate; promise and callback conversion may create wrappers. There is no blanket zero-overhead or reference-identity promise.
 
+For frequently recomputed view outputs, preserve identity-compatible values and unchanged child references where the declared contract permits. Converting a child usually requires a new containing record; do not mutate the original to avoid that allocation. Primitive inputs under the default identity policy require no representation conversion or allocation. This does not imply that an entire call, callback wrapper, or converted container is allocation-free.
+
 ## Adapter selection and composition
 
 Use declared types and explicit policy, never guesses based on arbitrary object shapes.
@@ -167,7 +192,7 @@ Manual mode composes the adapter tree explicitly. Future automation may derive i
 
 ### Directions
 
-Conceptually, capabilities are separate:
+`ToTS` and `ToRS` are fundamental capabilities; `Adapter` combines both:
 
 ```ts
 type ToTS<RS, TS> = { toTS(value: RS): TS };
@@ -185,6 +210,21 @@ RS argument -> toTS adapter -> TS callback -> toRS adapter -> RS caller
 ```
 
 An input position can therefore need `toTS` inside a callback. Determine requirements recursively from function positions, not just from whether a type occurs in a top-level argument or result.
+
+Direction requirements apply to manual composition and are the core model for any later generator. In these examples, the named data types contain no functions; any nested function positions require further reversal:
+
+```text
+Input.t -> View.t
+  Input: toRS only if its representation changes
+  View:  toTS only; no inbound requirement
+
+(User.t -> result<Order.t, Error.t>) -> View.t
+  callback argument User: toTS
+  callback return Result and its payloads: toRS
+  operation return View: toTS
+```
+
+An outbound-only view adapter is normal. An input/command adapter may provide only `toRS`; a shared domain adapter may provide both. These describe usage, not new adapter categories or annotations. Require only the capabilities encountered in the actual boundary, including recursively reversed callback positions.
 
 ### Generic exports
 
@@ -271,7 +311,8 @@ The manual milestone is complete when:
 - Both directions preserve nested absence, nullable/undefined option payloads, and supported nested Result payloads.
 - One custom domain adapter composes into a larger boundary, with the manual composition visible.
 - An adapted callback fixture demonstrates direction reversal, and missing capabilities fail clearly.
-- pH's clipboard experiment covers both its output and formatter input; its existing ergonomic genType APIs remain a comparison baseline.
+- pH's clipboard operation keeps its Result internal and returns feedback whose masked password can be styled separately; existing ergonomic genType APIs remain a comparison baseline.
+- A dedicated bidirectional Result fixture covers outbound conversion, actual TS branch inspection, and inbound conversion. Outbound-only view and inbound-only input examples require no unused inverse capability.
 - Unsupported cases are rejected or explicitly delegated to a custom boundary. No broad automatic derivation is implied.
 
 The later content milestone succeeds when ReScript-authored rich text can render safely in Svelte without React, using a documented construction/sanitization contract. Evaluate it independently of code generation and remote functions.

@@ -6,7 +6,7 @@
 
 Build Mog as a small ReScript helper library and handwritten public boundaries that compose adapters to transmute values. Decide whether type-driven generation is worth maintaining after that proof. A manual implementation may be the stopping point.
 
-pH currently consumes raw genType exports. The first change should add an isolated boundary and concrete consumers while keeping that baseline available for comparison. Completion requires runtime semantics and emitted TS contracts to agree, including nested Option/Result payloads and inbound conversion. This document is a plan, not a claim that the sample helper APIs already compile.
+pH currently consumes raw genType exports. The manual proof should add isolated adapter fixtures and concrete TS consumers while keeping that baseline available for comparison. The pH clipboard target is a coherent RS operation returning structured feedback, with its intermediate Result kept internal. Completion requires runtime semantics and emitted TS contracts to agree, including nested Option/Result payloads and inbound conversion. This document is a plan, not a claim that the sample helper APIs already compile.
 
 ## Ownership and public surface
 
@@ -20,7 +20,7 @@ FooInterop.res          optional handwritten public boundary
 
 Domain modules own opaque representations and their adapters. Boundary modules compose them. ReScript and genType produce the public JS and TS surface. TS/framework-specific facades remain optional.
 
-For pH, use a separate `ClipboardInterop.res` during the proof so the existing clipboard API remains usable. Consumers of that experiment import `./ClipboardInterop.gen.tsx`. This is a proposed path, not an existing module. A small project may instead put deliberate public conversions next to internal functions in one `.res` file.
+Use separate fixture boundary modules for the bidirectional Result proof, preserving the existing clipboard API during migration. The pH operation can live in `Clipboard.res` and export through genType when its feedback record is already ergonomic; add a separate interop module only if a selected representation requires conversion. A small project may put deliberate public conversions next to internal functions in one `.res` file.
 
 Use `Foo.res.interop.ts` only when a TS facade adds value, such as a TS-specific brand, schema integration, or framework wrapper. Do not require both RS and TS wrapper files.
 
@@ -40,7 +40,7 @@ Do not change project-wide compiler settings or introduce a new package structur
 
 ## Helper model
 
-Use `Adapter`, `toTS`, and `toRS` consistently in the design. Exact ReScript signatures and language-appropriate spelling are an implementation spike; TS-like notation here describes capabilities rather than prescribing a heterogeneous ReScript record API. Use destination-based direction names in conceptual examples; avoid mixing `toRS` with `fromTs` or calling the operations encode/decode.
+Treat `ToTS` and `ToRS` as independent capabilities and `Adapter` as their combination. Use `toTS` and `toRS` consistently in the design. Exact ReScript signatures and language-appropriate spelling are an implementation spike; TS-like notation here describes capabilities rather than prescribing a heterogeneous ReScript record API. Use destination-based direction names in conceptual examples; avoid mixing `toRS` with `fromTs` or calling the operations encode/decode.
 
 ```text
 identity
@@ -120,30 +120,53 @@ const copyResult = await copyToClipboard(writeText, generatedPassword);
 const feedback = formatCopyFeedback(copyResult, generatedPassword);
 ```
 
-The real page supplies a browser clipboard callback and stores the feedback in reactive state. It does not inspect the Result tag, so this is a compatibility/composition experiment rather than an assumed call-site simplification.
+The real page supplies a browser clipboard callback and stores the feedback in reactive state. It does not inspect the Result tag. Replace this application round trip with one coherent RS operation; retain the two-operation shape only as a dedicated bidirectional adapter fixture.
 
-Target contracts, with the same high-level call flow:
+The target public contract is illustrative TS notation, not verified generated output:
 
 ```ts
-type CopyError = "CopyFailed";
+type CopyFeedback = {
+  readonly prefix: string;
+  readonly maskedPassword: string;
+  readonly suffix: string;
+};
 
-// Result refers to the companion spec's structural envelope.
-type Copy = (
+type CopyGeneratedPassword = (
   writeText: (text: string) => Promise<void>,
   generatedPassword: string,
-) => Promise<Result<undefined, CopyError>>;
-
-type FormatFeedback = (
-  copyResult: Result<undefined, CopyError>,
-  generatedPassword: string,
-) => string;
+) => Promise<CopyFeedback>;
 ```
 
-The Result success payload is `undefined`, matching the unit-payload contract. The injected clipboard callback keeps its conventional `Promise<void>` return type; its fulfillment value is ignored.
+`Clipboard.copyGeneratedPassword` calls the existing `copyToClipboard`, handles its Result inside RS, and derives this feedback record using the existing password masking function:
 
-Wrap both exported operations. Outbound conversion alone would leave the formatter expecting the raw ReScript Result. Keep clipboard exception handling in the existing domain operation; the adapter must not add another catch policy.
+| Outcome | prefix | maskedPassword | suffix |
+| --- | --- | --- | --- |
+| Success | `"Copied "` | Masked operation input | `"."` |
+| Failure | `"Could not copy "` | Masked operation input | `". Try again."` |
 
-A separate TS fixture should inspect `error !== null` to demonstrate consumer narrowing. Do not rewrite the UI solely to manufacture a use for the new envelope.
+The field boundaries are a deliberate presentation contract. Svelte renders prefix and suffix as text and the masked password in its chosen element with its chosen class. Preserve spaces and text order. Do not parse a formatted sentence, duplicate outcome wording in TS, return an interpolated HTML string, or expose the unmasked password in feedback. Use the password supplied to this operation even if form state changes while the write is pending.
+
+The page already defines a `copyGeneratedPassword` event handler. Alias the RS import to avoid a name collision; inside that handler, replace the two RS calls with:
+
+```ts
+import { copyGeneratedPassword as copyPasswordWithFeedback } from './Clipboard.gen.tsx';
+
+// Inside the existing copyGeneratedPassword handler:
+copyFeedback = await copyPasswordWithFeedback(
+  text => navigator.clipboard.writeText(text),
+  generatedPassword,
+);
+```
+
+Keep reactive state, feedback clearing, the `isCopyPending` guard and reset, and element/class selection in Svelte. Update the feedback state type and rendering together; preserve current validation-before-copy behavior and existing accessibility behavior. RS owns masking and outcome wording. A plain record may need only genType; do not force a Mog adapter onto it. If a later requirement needs RS-authored markup, use the optional HAST integration without changing the rule that intermediate Results remain internal.
+
+Keep clipboard exception handling in the existing domain operation. The adapter must not add another catch policy. The injected callback retains its conventional `Promise<void>` return type; its fulfillment value is ignored.
+
+### Dedicated bidirectional Result fixture
+
+In this fixture, `CopyError` is the public literal type `"CopyFailed"`, and `Result` is the companion spec's structural envelope. Retain the old two-function flow: an operation returns managed `Result<undefined, CopyError>`, and a second operation accepts that same public Result. Wrap both directions so the second operation receives a converted RS Result. The TS consumer must also inspect `error !== null` and use both branches to demonstrate branch narrowing independently of the production page. Use injected resolving/rejecting writers, without a system clipboard or production page dependency.
+
+This fixture proves conversion and composition. It is not the recommended pH API or evidence that pH needs to expose a Result. The success payload remains `undefined`, matching the unit-payload contract.
 
 ### Baselines and additional fixtures
 
@@ -153,6 +176,7 @@ Use small dedicated fixtures for behavior pH does not naturally exercise:
 
 - Nested Option/Result composition, including `option<unit>`.
 - A custom domain type inside a record or array.
+- An outbound-only view adapter and an inbound-only input adapter, each usable without its inverse. Use validated inputs where domain construction requires them.
 - A TS callback receiving an adapted RS value and returning a value that requires `toRS`.
 - A generic operation that is demonstrably identity-compatible, and one that needs an explicit adapter or concrete boundary.
 
@@ -170,7 +194,7 @@ Verify consequences, not an exhaustive inventory of hypothetical features. The m
 | Composition | A custom leaf conversion is actually used inside a containing value in each required direction. |
 | Functions and promises | Callback directions are correct; thrown exceptions and rejections are not swallowed; conversion failures follow the declared contract. |
 | Public type accuracy | Generated TS supports narrowing and rejects incorrect calls without application casts masking mismatches. |
-| pH behavior | Clipboard success/failure feedback remains correct through the public boundary; existing comparison APIs still work. |
+| pH behavior | Success/failure wording and masking remain correct; the password is separately styleable, with no Result round trip, and validation still precedes writing. Existing comparison APIs still work. |
 | Capability failures | Missing conversion directions and unsupported defaults fail clearly. In manual mode, compiler errors or an explicit support gate may supply this evidence. |
 
 Do not promise automated unsupported-type detection before the analyzer exists. Manual authors must use supported helpers or explicit custom boundaries; the compiler checks their signatures, while semantic adapter laws require focused tests/review. Future generation must refuse types it cannot establish as supported.
@@ -184,7 +208,7 @@ For immutable data, round-trip equivalence concerns declared values, not referen
 1. Record the current compiler/runtime baseline and inspect existing generated bindings.
 2. Establish minimal ReScript definitions/helpers that emit the exact Option and Result public types. Prove TS narrowing before expanding the helper catalog.
 3. Add nested-state and custom-composition fixtures, including required inbound conversions and a callback.
-4. Add the proposed clipboard boundary while preserving the original API. Move the experimental consumers to it and verify behavior and public types.
+4. Add the coherent clipboard operation while preserving the original API. Move the page to structured feedback and verify success/failure text, masking, separate password styling, and public types. Keep the bidirectional Result flow in its dedicated fixture.
 5. Compare ergonomics, wrapper maintenance, and emitted runtime work against raw genType. Stop at manual helpers if they provide enough value.
 
 Remove an old boundary only after its replacement is verified and its remaining consumers are accounted for. The spec does not require removing the raw API or migrating every pH export.
@@ -228,7 +252,7 @@ authored Foo.res + resolved type information + policy
 
 Prefer generated ReScript so the compiler checks conversions. A TS facade remains an alternative where the target contract benefits from it. Generated naming, module collisions, and public import stability must be resolved before promising this exact layout.
 
-The analyzer must understand aliases, abstraction boundaries, type parameters, and directional requirements sufficiently to either derive a conversion or issue a diagnostic. It must not substitute runtime shape guessing for missing type information.
+The analyzer must derive required capabilities recursively from function positions: top-level inputs need `toRS`, outputs need `toTS`, and callback arguments/returns reverse those requirements at each function boundary. Identity-compatible positions need no representation conversion. It must not require unused inverse adapters. The analyzer must understand aliases, abstraction boundaries, and type parameters sufficiently to either derive a conversion or issue a diagnostic. It must not substitute runtime shape guessing for missing type information.
 
 ### Feasibility gates
 
@@ -253,7 +277,7 @@ Wrapper location, reuse, maintenance, and generation are partly independent choi
 | --- | --- |
 | Raw genType | Existing shapes already serve consumers. |
 | Inline handwritten exports | A small module benefits from colocated public conversions. |
-| Separate handwritten RS boundary | Keep domain and public representation concerns separate. Preferred pH experiment. |
+| Separate handwritten RS boundary | Keep domain and public representation concerns separate. Useful for isolated adapter fixtures; optional for pH's clipboard record. |
 | Shared helper library | Reduce repeated conversions in either handwritten arrangement. Potential stopping point. |
 | Thin TS facade | TS or framework-specific integration adds value. |
 | Human/agent-maintained wrappers | Maintain explicit boundaries without a dedicated generator. |
