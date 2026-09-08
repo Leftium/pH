@@ -6,13 +6,6 @@ type copyError =
 type writeText = string => promise<unit>
 
 @genType
-type copyFeedback = {
-  prefix: string,
-  password: string,
-  suffix: string,
-}
-
-@genType
 let copyToClipboard: (writeText, string) => promise<result<unit, copyError>> = async (writeText, generatedPassword) => {
   try {
     await writeText(generatedPassword)
@@ -23,10 +16,10 @@ let copyToClipboard: (writeText, string) => promise<result<unit, copyError>> = a
 }
 
 @genType
-let formatCopyFeedback = (copyResult: result<unit, copyError>, generatedPassword: string): copyFeedback => {
+let formatCopyFeedback = (copyResult: result<unit, copyError>, generatedPassword: string): string => {
   let maskedPassword = GeneratedPassword.maskPassword(generatedPassword)
   switch copyResult {
-  | Ok() => {prefix: "Copied ", password: maskedPassword, suffix: "."}
-  | Error(CopyFailed) => {prefix: "Could not copy ", password: maskedPassword, suffix: ". Try again."}
+  | Ok() => `Copied ${maskedPassword}.`
+  | Error(CopyFailed) => `Could not copy ${maskedPassword}. Try again.`
   }
 }
