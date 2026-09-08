@@ -103,11 +103,15 @@ describe('clipboard', () => {
 	});
 
 	it('formats masked feedback for completed copy operations', () => {
-		expect(formatCopyFeedback({ TAG: 'Ok', _0: undefined }, '4QAIn8SvaW')).toBe(
-			'Copied 4Q••••••••.'
-		);
-		expect(formatCopyFeedback({ TAG: 'Error', _0: 'CopyFailed' }, '4QAIn8SvaW')).toBe(
-			'Could not copy 4Q••••••••. Try again.'
-		);
+		expect(formatCopyFeedback({ TAG: 'Ok', _0: undefined }, '4QAIn8SvaW')).toStrictEqual({
+			prefix: 'Copied ',
+			password: '4Q••••••••',
+			suffix: '.'
+		});
+		expect(formatCopyFeedback({ TAG: 'Error', _0: 'CopyFailed' }, '4QAIn8SvaW')).toStrictEqual({
+			prefix: 'Could not copy ',
+			password: '4Q••••••••',
+			suffix: '. Try again.'
+		});
 	});
 });

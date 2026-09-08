@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 	import { getConfirmationView } from './PasswordConfirmation.gen.tsx';
-	import { copyToClipboard, formatCopyFeedback } from './Clipboard.gen.tsx';
+	import {
+		copyToClipboard,
+		formatCopyFeedback,
+		type copyFeedback as CopyFeedback
+	} from './Clipboard.gen.tsx';
 	import { createBookmarkletHref, decodeAddressFromHash } from './Bookmarklet.gen.tsx';
 	import { getFormView } from './GeneratorForm.gen.tsx';
 	import { formatGeneratedPassword } from './GeneratedPassword.gen.tsx';
@@ -11,7 +15,7 @@
 	let confirmationInput = $state('');
 	let hasSubmitted = $state(false);
 	let revealGeneratedPassword = $state(false);
-	let copyFeedback = $state('');
+	let copyFeedback = $state<CopyFeedback | undefined>();
 	let isCopyPending = $state(false);
 	let bookmarkletHref = $state('');
 	let addressInputElement: HTMLInputElement;
@@ -31,7 +35,7 @@
 
 		const generatedPassword = form.generatedPassword;
 		isCopyPending = true;
-		copyFeedback = '';
+		copyFeedback = undefined;
 		const copyResult = await copyToClipboard(
 			(text) => navigator.clipboard.writeText(text),
 			generatedPassword
@@ -122,7 +126,12 @@
 				}}
 				onblur={() => (revealGeneratedPassword = false)}
 			/>
-			<small>{copyFeedback}</small>
+			<small>
+				{#if copyFeedback}
+					{copyFeedback.prefix}<span class="password-text">{copyFeedback.password}</span
+					>{copyFeedback.suffix}
+				{/if}
+			</small>
 		</label>
 		<button type="button" disabled={isCopyPending} onclick={() => void copyGeneratedPassword()}
 			>Copy</button
@@ -158,7 +167,8 @@
 	}
 
 	input[type='password'],
-	.generated-password {
+	.generated-password,
+	.password-text {
 		font-family: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 	}
 
