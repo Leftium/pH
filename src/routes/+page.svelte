@@ -40,6 +40,13 @@
 		isCopyPending = false;
 	}
 
+	function handlePasswordKeydown(event: KeyboardEvent) {
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			void copyGeneratedPassword();
+		}
+	}
+
 	onMount(() => {
 		const generatorUrl = `${window.location.origin}${window.location.pathname}${window.location.search}`;
 		bookmarkletHref = createBookmarkletHref(generatorUrl);
@@ -81,10 +88,11 @@
 			Master Password
 			<input
 				type="password"
-				autocomplete="current-password"
+				autocomplete="off"
 				aria-invalid={form.passwordAriaInvalid}
 				bind:value={masterPassword}
 				bind:this={passwordInputElement}
+				onkeydown={handlePasswordKeydown}
 			/>
 			<small><span role={form.passwordMessage.role}>{form.passwordMessage.text}</span></small>
 		</label>
@@ -97,6 +105,7 @@
 				class={confirmation.className}
 				aria-invalid={confirmation.ariaInvalid}
 				bind:value={confirmationInput}
+				onkeydown={handlePasswordKeydown}
 			/>
 			<small aria-live="polite">{confirmation.message}</small>
 		</label>
