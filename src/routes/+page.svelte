@@ -79,11 +79,13 @@
 			<small><span role={form.addressMessage.role}>{form.addressMessage.text}</span></small>
 		</label>
 
+		<!-- Enpass skips Enter capture when an identifying attribute contains "search". -->
 		<label>
 			Master Password
 			<input
 				type="password"
 				autocomplete="off"
+				class="enpass-search-bypass"
 				aria-invalid={form.passwordAriaInvalid}
 				bind:value={masterPassword}
 				bind:this={passwordInputElement}
@@ -97,7 +99,7 @@
 			<input
 				type="password"
 				autocomplete="off"
-				class={confirmation.className}
+				class={`enpass-search-bypass ${confirmation.className ?? ''}`}
 				aria-invalid={confirmation.ariaInvalid}
 				bind:value={confirmationInput}
 				onkeydown={handlePasswordKeydown}
