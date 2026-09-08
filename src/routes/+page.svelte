@@ -110,7 +110,7 @@
 		<label>
 			Generated Password
 			<input
-				class="generated-password"
+				class="generated-password enpass-search-bypass"
 				readonly
 				autocomplete="off"
 				value={generatedPassword}
