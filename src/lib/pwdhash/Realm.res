@@ -1,3 +1,5 @@
+// Resolves a user-entered site address to the registrable domain ("realm") used by PwdHash.
+
 type resolutionError =
   | MissingAddress
   | InvalidAddress
@@ -13,24 +15,24 @@ type parsedAddress = {
 @module("tldts-icann")
 external parseAddress: (string, parseOptions) => parsedAddress = "parse"
 
-let parseDomain = input => {
-  let address = input->String.trim
-  let normalizedAddress = address->String.startsWith("//") ? `https:${address}` : address
-  let parsed = parseAddress(normalizedAddress, {detectSpecialUse: true})
+let extractDomain = addressInput => {
+  let trimmedAddress = addressInput->String.trim
+  let normalizedAddress = trimmedAddress->String.startsWith("//") ? `https:${trimmedAddress}` : trimmedAddress
+  let parsedAddress = parseAddress(normalizedAddress, {detectSpecialUse: true})
 
-  switch (parsed.domain->Nullable.toOption, parsed.publicSuffix->Nullable.toOption) {
-  | (Some(_), _) if parsed.isIp => None
+  switch (parsedAddress.domain->Nullable.toOption, parsedAddress.publicSuffix->Nullable.toOption) {
+  | (Some(_), _) if parsedAddress.isIp => None
   | (Some(_), Some("invalid")) => None
   | (domain, _) => domain
   }
 }
 
 @genType
-let resolve = (input: string): result<string, resolutionError> =>
-  if input->String.trim == "" {
+let resolve = (addressInput: string): result<string, resolutionError> =>
+  if addressInput->String.trim == "" {
     Error(MissingAddress)
   } else {
-    switch parseDomain(input) {
+    switch extractDomain(addressInput) {
     | Some(domain) => Ok(domain)
     | None => Error(InvalidAddress)
     }

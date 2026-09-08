@@ -1,8 +1,10 @@
+// Creates the pH bookmarklet and decodes the site address it passes back to the generator.
+
 @val external decodeUriComponent: string => string = "decodeURIComponent"
 @val external jsonStringify: string => string = "JSON.stringify"
 
 @genType
-let decodeBookmarkletHash = (hash: string): string =>
+let decodeAddressFromHash = (hash: string): string =>
   if hash == "" {
     ""
   } else {
@@ -15,6 +17,6 @@ let decodeBookmarkletHash = (hash: string): string =>
 
 @genType
 let createBookmarkletHref = (generatorUrl: string): string => {
-  let script = `window.open(${jsonStringify(generatorUrl)}+'\\x23'+encodeURIComponent(location.href),'_blank','noopener')`
-  `javascript:${script}`
+  let bookmarkletScript = `window.open(${jsonStringify(generatorUrl)}+'\\x23'+encodeURIComponent(location.href),'_blank','noopener')`
+  `javascript:${bookmarkletScript}`
 }

@@ -1,27 +1,27 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
-	import { presentConfirmation } from '#lib/pwdhash/Confirmation.gen.tsx';
-	import { copyToClipboard, presentCopyFeedback } from '#lib/pwdhash/Clipboard.gen.tsx';
-	import { createBookmarkletHref, decodeBookmarkletHash } from '#lib/pwdhash/Bookmarklet.gen.tsx';
-	import { presentForm } from '#lib/pwdhash/Form.gen.tsx';
-	import { presentGeneratedPassword } from '#lib/pwdhash/GeneratedPassword.gen.tsx';
+	import { getConfirmationView } from './PasswordConfirmation.gen.tsx';
+	import { copyToClipboard, formatCopyFeedback } from './Clipboard.gen.tsx';
+	import { createBookmarkletHref, decodeAddressFromHash } from './Bookmarklet.gen.tsx';
+	import { getFormView } from './GeneratorForm.gen.tsx';
+	import { formatGeneratedPassword } from './GeneratedPassword.gen.tsx';
 
-	let domainInput = $state('');
-	let sourcePassword = $state('');
+	let addressInput = $state('');
+	let masterPassword = $state('');
 	let confirmationInput = $state('');
 	let hasSubmitted = $state(false);
-	let isGeneratedPasswordFocused = $state(false);
+	let revealGeneratedPassword = $state(false);
 	let copyFeedback = $state('');
 	let isCopyPending = $state(false);
 	let bookmarkletHref = $state('');
-	let domainInputElement: HTMLInputElement;
+	let addressInputElement: HTMLInputElement;
 	let passwordInputElement: HTMLInputElement;
 
-	let form = $derived(presentForm(domainInput, sourcePassword, hasSubmitted));
+	let form = $derived(getFormView(addressInput, masterPassword, hasSubmitted));
 	let generatedPassword = $derived(
-		presentGeneratedPassword(form.generatedPassword, isGeneratedPasswordFocused)
+		formatGeneratedPassword(form.generatedPassword, revealGeneratedPassword)
 	);
-	let confirmation = $derived(presentConfirmation(sourcePassword, confirmationInput));
+	let confirmation = $derived(getConfirmationView(masterPassword, confirmationInput));
 
 	async function copyGeneratedPassword() {
 		hasSubmitted = true;
@@ -29,20 +29,23 @@
 			return;
 		}
 
-		const password = form.generatedPassword;
+		const generatedPassword = form.generatedPassword;
 		isCopyPending = true;
 		copyFeedback = '';
-		const result = await copyToClipboard((text) => navigator.clipboard.writeText(text), password);
-		copyFeedback = presentCopyFeedback(result, password);
+		const copyResult = await copyToClipboard(
+			(text) => navigator.clipboard.writeText(text),
+			generatedPassword
+		);
+		copyFeedback = formatCopyFeedback(copyResult, generatedPassword);
 		isCopyPending = false;
 	}
 
 	onMount(() => {
 		const generatorUrl = `${window.location.origin}${window.location.pathname}${window.location.search}`;
 		bookmarkletHref = createBookmarkletHref(generatorUrl);
-		const initialAddress = decodeBookmarkletHash(window.location.hash.slice(1));
-		domainInput = initialAddress;
-		(initialAddress === '' ? domainInputElement : passwordInputElement).focus();
+		const addressFromHash = decodeAddressFromHash(window.location.hash.slice(1));
+		addressInput = addressFromHash;
+		(addressFromHash === '' ? addressInputElement : passwordInputElement).focus();
 	});
 </script>
 
@@ -67,11 +70,11 @@
 			<input
 				autocomplete="url"
 				placeholder="https://example.com"
-				aria-invalid={form.domainAriaInvalid}
-				bind:value={domainInput}
-				bind:this={domainInputElement}
+				aria-invalid={form.addressAriaInvalid}
+				bind:value={addressInput}
+				bind:this={addressInputElement}
 			/>
-			<small><span role={form.domainMessage.role}>{form.domainMessage.text}</span></small>
+			<small><span role={form.addressMessage.role}>{form.addressMessage.text}</span></small>
 		</label>
 
 		<label>
@@ -80,7 +83,7 @@
 				type="password"
 				autocomplete="current-password"
 				aria-invalid={form.passwordAriaInvalid}
-				bind:value={sourcePassword}
+				bind:value={masterPassword}
 				bind:this={passwordInputElement}
 			/>
 			<small><span role={form.passwordMessage.role}>{form.passwordMessage.text}</span></small>
@@ -104,14 +107,14 @@
 				class="generated-password"
 				readonly
 				autocomplete="off"
-				value={generatedPassword.value}
+				value={generatedPassword}
 				onfocus={async (event) => {
 					const input = event.currentTarget;
-					isGeneratedPasswordFocused = true;
+					revealGeneratedPassword = true;
 					await tick();
 					input.select();
 				}}
-				onblur={() => (isGeneratedPasswordFocused = false)}
+				onblur={() => (revealGeneratedPassword = false)}
 			/>
 			<small>{copyFeedback}</small>
 		</label>

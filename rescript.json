@@ -2,7 +2,7 @@
 	"name": "ph",
 	"sources": [
 		{
-			"dir": "src/lib/pwdhash",
+			"dir": "src",
 			"subdirs": true
 		}
 	],
