@@ -14,16 +14,16 @@ This document owns the representation contracts and scope. The companion [implem
 
 Mog is short for transmogrify/transmog. Use Mog as the project, tool, or library name, and `transmute` as the process verb. Avoid `mog`, `mogged`, or `mogging` as technical verbs.
 
-| Concept | Preferred term |
-| --- | --- |
-| Project/tool/library | Mog |
-| Representation-conversion process | transmute / transmutation |
-| Reusable conversion rule for a type or semantic representation | adapter |
-| RS-to-TS direction | `toTS` |
-| TS-to-RS direction | `toRS` |
-| Place adapters are applied | boundary |
-| Overall category | interop / FFI |
-| SvelteKit server/client serialization | transport |
+| Concept                                                        | Preferred term            |
+| -------------------------------------------------------------- | ------------------------- |
+| Project/tool/library                                           | Mog                       |
+| Representation-conversion process                              | transmute / transmutation |
+| Reusable conversion rule for a type or semantic representation | adapter                   |
+| RS-to-TS direction                                             | `toTS`                    |
+| TS-to-RS direction                                             | `toRS`                    |
+| Place adapters are applied                                     | boundary                  |
+| Overall category                                               | interop / FFI             |
+| SvelteKit server/client serialization                          | transport                 |
 
 A Mog boundary may be handwritten, generated, attribute-driven, or framework-specific. Adapters perform transmutation at that boundary; they are not a separate stage before transmutation. Ordinary "convert/conversion" remains useful explanatory wording. Avoid codec, converter, mapper, or transmuter as competing names for adapters, and encode/decode or marshal/unmarshal as names for the core directional operations.
 
@@ -35,11 +35,11 @@ ReScript and TypeScript exchange live JavaScript values. Mog transmutation chang
 
 Three pH boundaries illustrate different needs:
 
-| Boundary | Current behavior | Proposed experiment |
-| --- | --- | --- |
-| [Clipboard](../src/routes/Clipboard.res) | `promise<result<unit, copyError>>`; its genType API exposes the Result variant. [The caller](../src/routes/+page.svelte) passes it back to `formatCopyFeedback` without inspecting tags. | Keep the Result inside one RS operation and return structured feedback with a separately renderable masked password. Move bidirectional Result conversion to a dedicated fixture. |
-| [GeneratorForm](../src/routes/GeneratorForm.res) and [PasswordConfirmation](../src/routes/PasswordConfirmation.res) | Useful view records with simple optional fields already exposed naturally by genType. | Keep these as an identity/raw-genType baseline. Migrating an option to the managed representation is an explicit API change. |
-| [Domain message](../src/routes/GeneratorForm.res) | Plain text such as `Domain: example.com`. | Later, add rich formatting through HAST. This adds capability; it does not remove an existing markup reconstruction system. |
+| Boundary                                                                                                            | Current behavior                                                                                                                                                                         | Proposed experiment                                                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Clipboard](../src/routes/Clipboard.res)                                                                            | `promise<result<unit, copyError>>`; its genType API exposes the Result variant. [The caller](../src/routes/+page.svelte) passes it back to `formatCopyFeedback` without inspecting tags. | Keep the Result inside one RS operation and return structured feedback with a separately renderable masked password. Move bidirectional Result conversion to a dedicated fixture. |
+| [GeneratorForm](../src/routes/GeneratorForm.res) and [PasswordConfirmation](../src/routes/PasswordConfirmation.res) | Useful view records with simple optional fields already exposed naturally by genType.                                                                                                    | Keep these as an identity/raw-genType baseline. Migrating an option to the managed representation is an explicit API change.                                                      |
+| [Domain message](../src/routes/GeneratorForm.res)                                                                   | Plain text such as `Domain: example.com`.                                                                                                                                                | Later, add rich formatting through HAST. This adds capability; it does not remove an existing markup reconstruction system.                                                       |
 
 The intended payoff is a stable public contract, reusable composition, and clear unsupported-case diagnostics. Manual adapters may be a sufficient final product.
 
@@ -66,18 +66,18 @@ Select Mog boundaries deliberately. A coherent operation returning an already er
 
 ## Decisions and scope
 
-| Decision | Rationale |
-| --- | --- |
-| Preserve every state of supported bidirectional values. | Silent flattening makes round trips unreliable. Reject unsupported representations instead. |
-| Use explicit Option envelopes by default on managed boundaries. | Presence remains distinct from the payload, including nested absence, `null`, and `undefined`. |
-| Aim for structural Wellcrafted Result compatibility. | Consumers can use plain objects without installing Wellcrafted. Divergence requires a concrete benefit and an explicit policy. |
-| Cover a small core and compose custom adapters. | Edge cases should not force the core to model the entire language. |
+| Decision                                                                           | Rationale                                                                                                                                     |
+| ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Preserve every state of supported bidirectional values.                            | Silent flattening makes round trips unreliable. Reject unsupported representations instead.                                                   |
+| Use explicit Option envelopes by default on managed boundaries.                    | Presence remains distinct from the payload, including nested absence, `null`, and `undefined`.                                                |
+| Aim for structural Wellcrafted Result compatibility.                               | Consumers can use plain objects without installing Wellcrafted. Divergence requires a concrete benefit and an explicit policy.                |
+| Cover a small core and compose custom adapters.                                    | Edge cases should not force the core to model the entire language.                                                                            |
 | Support both directions, prioritize RS-to-TS ergonomics and conversion efficiency. | Rich output/view values motivate the primary architecture; arguments and callbacks still require first-class inbound conversion where needed. |
-| Minimize crossings of intermediate domain values. | Coherent RS operations keep values internal when TS has no use for them. |
-| Keep platform/framework complexity in the shell where practical. | Primitive event facts and narrow capabilities keep application boundaries small. |
-| Keep conversions with the ReScript type owner where practical. | Internal representation changes should not leak into a TS facade. |
-| Prove manual use before adding metadata or code generation. | Automation must address observed repetition. |
-| Keep rich content and framework glue optional. | The core must work without HAST, Svelte, or SvelteKit. |
+| Minimize crossings of intermediate domain values.                                  | Coherent RS operations keep values internal when TS has no use for them.                                                                      |
+| Keep platform/framework complexity in the shell where practical.                   | Primitive event facts and narrow capabilities keep application boundaries small.                                                              |
+| Keep conversions with the ReScript type owner where practical.                     | Internal representation changes should not leak into a TS facade.                                                                             |
+| Prove manual use before adding metadata or code generation.                        | Automation must address observed repetition.                                                                                                  |
+| Keep rich content and framework glue optional.                                     | The core must work without HAST, Svelte, or SvelteKit.                                                                                        |
 
 In scope for the manual proof: primitives, unit, explicit options, compatible results, arrays, tuples, immutable record usage, promises, suitable variants, and explicit custom adapters. Include a callback composition fixture to establish direction reversal.
 
@@ -103,14 +103,14 @@ const absent: Option<string> = { value: null, hasValue: false };
 
 // Some(None)
 const innerAbsent: Option<Option<string>> = {
-  value: { value: null, hasValue: false },
-  hasValue: true,
+	value: { value: null, hasValue: false },
+	hasValue: true
 };
 
 // Some(Some("hello"))
 const nested: Option<Option<string>> = {
-  value: { value: "hello", hasValue: true },
-  hasValue: true,
+	value: { value: 'hello', hasValue: true },
+	hasValue: true
 };
 ```
 
@@ -119,8 +119,7 @@ Each option layer has one envelope. `Some<T>` names a branch; it does not add an
 An additional presence type parameter is possible if real APIs need to express known presence generically:
 
 ```ts
-type OptionWithPresence<T, P extends boolean = boolean> =
-  P extends true ? Some<T> : None;
+type OptionWithPresence<T, P extends boolean = boolean> = P extends true ? Some<T> : None;
 ```
 
 This changes only the type spelling. Start with the simpler union and branch aliases. A presence parameter describes one layer; it does not replace nested envelopes.
@@ -131,8 +130,7 @@ This changes only the type spelling. Start with the simpler union and branch ali
 
 ```ts
 type Result<T, E> =
-  | { readonly data: T; readonly error: null }
-  | { readonly data: null; readonly error: E };
+	{ readonly data: T; readonly error: null } | { readonly data: null; readonly error: E };
 ```
 
 Use Wellcrafted's structural envelope without requiring its runtime or type imports in consumer projects. Both branches recursively convert their payloads. The default adapter requires the public error type to exclude `null`, because `null` identifies success. Check `error !== null`, not truthiness.
@@ -155,19 +153,19 @@ Returned Result values, thrown exceptions, and rejected promises remain separate
 
 Here, `T'` means the public representation selected for `T`.
 
-| ReScript type | Public representation | Conversion rule |
-| --- | --- | --- |
-| `string`, `bool`, `int`, `float` | `string`, `boolean`, `number` | Identity at the representation level. Static TS `number` does not validate ReScript numeric or domain assumptions. |
-| `unit` | `void` for function returns; `undefined` as a payload | Preserve unit when nested in an envelope. |
-| `option<T>` | `Option<T'>` | Convert the present payload; preserve every absence layer. |
-| `result<T, E>` | `Result<T', E'>` | Convert the selected branch; require a non-null public error representation. |
-| `array<T>` | `Array<T'>` | Compose the child adapter; identity only when compatible. |
-| Tuple | TS tuple | Compose each position. |
-| Record | Object with declared public fields | Compose each field; preserve field presence and declared mutability constraints. |
-| `promise<T>` | `Promise<T'>` | Convert fulfillment; preserve rejection behavior. |
-| Compatible variant | Literal union or discriminated union | Preserve a suitable compiler-emitted shape, or use an explicit adapter. |
-| Function/callback | Function with adapted parameters and return | Compose conversions with direction reversal at each function boundary. |
-| Custom type | Adapter's declared public type | The adapter owns the internal conversion. |
+| ReScript type                    | Public representation                                 | Conversion rule                                                                                                    |
+| -------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `string`, `bool`, `int`, `float` | `string`, `boolean`, `number`                         | Identity at the representation level. Static TS `number` does not validate ReScript numeric or domain assumptions. |
+| `unit`                           | `void` for function returns; `undefined` as a payload | Preserve unit when nested in an envelope.                                                                          |
+| `option<T>`                      | `Option<T'>`                                          | Convert the present payload; preserve every absence layer.                                                         |
+| `result<T, E>`                   | `Result<T', E'>`                                      | Convert the selected branch; require a non-null public error representation.                                       |
+| `array<T>`                       | `Array<T'>`                                           | Compose the child adapter; identity only when compatible.                                                          |
+| Tuple                            | TS tuple                                              | Compose each position.                                                                                             |
+| Record                           | Object with declared public fields                    | Compose each field; preserve field presence and declared mutability constraints.                                   |
+| `promise<T>`                     | `Promise<T'>`                                         | Convert fulfillment; preserve rejection behavior.                                                                  |
+| Compatible variant               | Literal union or discriminated union                  | Preserve a suitable compiler-emitted shape, or use an explicit adapter.                                            |
+| Function/callback                | Function with adapted parameters and return           | Compose conversions with direction reversal at each function boundary.                                             |
+| Custom type                      | Adapter's declared public type                        | The adapter owns the internal conversion.                                                                          |
 
 Record fields containing managed options are required envelope fields unless the public contract explicitly says otherwise. Do not confuse `{ field: Option<T> }`, `{ field: T | undefined }`, and `{ field?: T }`.
 
@@ -319,14 +317,14 @@ The later content milestone succeeds when ReScript-authored rich text can render
 
 ## References and related projects
 
-| Reference | What to reuse or compare |
-| --- | --- |
-| [ReScript TypeScript integration / genType](https://rescript-lang.org/docs/manual/typescript-integration/) | Baseline public types and existing representation support. Verify against the pinned compiler. |
-| [ReScript options](https://rescript-lang.org/docs/manual/null-undefined-option/) | Source semantics; nested absence must survive conversion. |
-| [Wellcrafted](https://github.com/wellcrafted-dev/wellcrafted) | Structural Result and tagged-error conventions, without a required consumer dependency. |
-| [Sury, formerly ReScript Schema](https://github.com/DZakh/sury) | Existing schema, transformation, and serialization approach to compare before adding validation machinery. |
-| [ReScript generic JSX](https://rescript-lang.org/docs/manual/jsx/#generic-jsx-transform-jsx-beyond-react-experimental) and [ResX](https://github.com/zth/res-x) | Runtime requirements and an existing use of JSX outside React. |
-| [HAST](https://github.com/syntax-tree/hast), [MDAST](https://github.com/syntax-tree/mdast), and [rehype-sanitize](https://github.com/rehypejs/rehype-sanitize) | Shared formats and sanitization policy. |
-| [hast-util-to-jsx-runtime](https://github.com/syntax-tree/hast-util-to-jsx-runtime) | Rendering bridge to investigate before building framework glue; compatibility still needs a spike. |
-| [SvelteKit remote functions](https://svelte.dev/docs/kit/remote-functions) | Separate handler, validation, and transport boundary. |
-| [pH v2 spec](2026-09-06-v2.md) | Host application's architecture and scope; this new project does not supersede it. |
+| Reference                                                                                                                                                       | What to reuse or compare                                                                                   |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| [ReScript TypeScript integration / genType](https://rescript-lang.org/docs/manual/typescript-integration/)                                                      | Baseline public types and existing representation support. Verify against the pinned compiler.             |
+| [ReScript options](https://rescript-lang.org/docs/manual/null-undefined-option/)                                                                                | Source semantics; nested absence must survive conversion.                                                  |
+| [Wellcrafted](https://github.com/wellcrafted-dev/wellcrafted)                                                                                                   | Structural Result and tagged-error conventions, without a required consumer dependency.                    |
+| [Sury, formerly ReScript Schema](https://github.com/DZakh/sury)                                                                                                 | Existing schema, transformation, and serialization approach to compare before adding validation machinery. |
+| [ReScript generic JSX](https://rescript-lang.org/docs/manual/jsx/#generic-jsx-transform-jsx-beyond-react-experimental) and [ResX](https://github.com/zth/res-x) | Runtime requirements and an existing use of JSX outside React.                                             |
+| [HAST](https://github.com/syntax-tree/hast), [MDAST](https://github.com/syntax-tree/mdast), and [rehype-sanitize](https://github.com/rehypejs/rehype-sanitize)  | Shared formats and sanitization policy.                                                                    |
+| [hast-util-to-jsx-runtime](https://github.com/syntax-tree/hast-util-to-jsx-runtime)                                                                             | Rendering bridge to investigate before building framework glue; compatibility still needs a spike.         |
+| [SvelteKit remote functions](https://svelte.dev/docs/kit/remote-functions)                                                                                      | Separate handler, validation, and transport boundary.                                                      |
+| [pH v2 spec](2026-09-06-v2.md)                                                                                                                                  | Host application's architecture and scope; this new project does not supersede it.                         |

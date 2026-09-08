@@ -95,15 +95,15 @@ The public consumer then has this target shape:
 
 ```ts
 async function displayLookup(id: string) {
-  const result = await lookup(id);
+	const result = await lookup(id);
 
-  if (result.error !== null) {
-    showError(result.error);
-  } else if (result.data.hasValue) {
-    showUser(result.data.value);
-  } else {
-    showNotFound();
-  }
+	if (result.error !== null) {
+		showError(result.error);
+	} else if (result.data.hasValue) {
+		showUser(result.data.value);
+	} else {
+		showNotFound();
+	}
 }
 ```
 
@@ -126,22 +126,22 @@ The target public contract is illustrative TS notation, not verified generated o
 
 ```ts
 type CopyFeedback = {
-  readonly prefix: string;
-  readonly maskedPassword: string;
-  readonly suffix: string;
+	readonly prefix: string;
+	readonly maskedPassword: string;
+	readonly suffix: string;
 };
 
 type CopyGeneratedPassword = (
-  writeText: (text: string) => Promise<void>,
-  generatedPassword: string,
+	writeText: (text: string) => Promise<void>,
+	generatedPassword: string
 ) => Promise<CopyFeedback>;
 ```
 
 `Clipboard.copyGeneratedPassword` calls the existing `copyToClipboard`, handles its Result inside RS, and derives this feedback record using the existing password masking function:
 
-| Outcome | prefix | maskedPassword | suffix |
-| --- | --- | --- | --- |
-| Success | `"Copied "` | Masked operation input | `"."` |
+| Outcome | prefix              | maskedPassword         | suffix           |
+| ------- | ------------------- | ---------------------- | ---------------- |
+| Success | `"Copied "`         | Masked operation input | `"."`            |
 | Failure | `"Could not copy "` | Masked operation input | `". Try again."` |
 
 The field boundaries are a deliberate presentation contract. Svelte renders prefix and suffix as text and the masked password in its chosen element with its chosen class. Preserve spaces and text order. Do not parse a formatted sentence, duplicate outcome wording in TS, return an interpolated HTML string, or expose the unmasked password in feedback. Use the password supplied to this operation even if form state changes while the write is pending.
@@ -153,8 +153,8 @@ import { copyGeneratedPassword as copyPasswordWithFeedback } from './Clipboard.g
 
 // Inside the existing copyGeneratedPassword handler:
 copyFeedback = await copyPasswordWithFeedback(
-  text => navigator.clipboard.writeText(text),
-  generatedPassword,
+	(text) => navigator.clipboard.writeText(text),
+	generatedPassword
 );
 ```
 
@@ -186,16 +186,16 @@ These fixtures should prove the shared contract without adding unrelated feature
 
 Verify consequences, not an exhaustive inventory of hypothetical features. The manual proof needs:
 
-| Concern | Evidence |
-| --- | --- |
-| Option state preservation | Both directions distinguish `None`, `Some(None)`, deeper nesting, and supported `Some(null)`/`Some(undefined)` payloads. |
-| Result compatibility | Success/error branches, nested payloads, and TS assignability against a pinned Wellcrafted type in development; consumers need no Wellcrafted dependency. |
-| Invalid default Result error | A nullable public error type requires an explicit adapter or is rejected. Falsy non-null errors remain errors. |
-| Composition | A custom leaf conversion is actually used inside a containing value in each required direction. |
-| Functions and promises | Callback directions are correct; thrown exceptions and rejections are not swallowed; conversion failures follow the declared contract. |
-| Public type accuracy | Generated TS supports narrowing and rejects incorrect calls without application casts masking mismatches. |
-| pH behavior | Success/failure wording and masking remain correct; the password is separately styleable, with no Result round trip, and validation still precedes writing. Existing comparison APIs still work. |
-| Capability failures | Missing conversion directions and unsupported defaults fail clearly. In manual mode, compiler errors or an explicit support gate may supply this evidence. |
+| Concern                      | Evidence                                                                                                                                                                                         |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Option state preservation    | Both directions distinguish `None`, `Some(None)`, deeper nesting, and supported `Some(null)`/`Some(undefined)` payloads.                                                                         |
+| Result compatibility         | Success/error branches, nested payloads, and TS assignability against a pinned Wellcrafted type in development; consumers need no Wellcrafted dependency.                                        |
+| Invalid default Result error | A nullable public error type requires an explicit adapter or is rejected. Falsy non-null errors remain errors.                                                                                   |
+| Composition                  | A custom leaf conversion is actually used inside a containing value in each required direction.                                                                                                  |
+| Functions and promises       | Callback directions are correct; thrown exceptions and rejections are not swallowed; conversion failures follow the declared contract.                                                           |
+| Public type accuracy         | Generated TS supports narrowing and rejects incorrect calls without application casts masking mismatches.                                                                                        |
+| pH behavior                  | Success/failure wording and masking remain correct; the password is separately styleable, with no Result round trip, and validation still precedes writing. Existing comparison APIs still work. |
+| Capability failures          | Missing conversion directions and unsupported defaults fail clearly. In manual mode, compiler errors or an explicit support gate may supply this evidence.                                       |
 
 Do not promise automated unsupported-type detection before the analyzer exists. Manual authors must use supported helpers or explicit custom boundaries; the compiler checks their signatures, while semantic adapter laws require focused tests/review. Future generation must refuse types it cannot establish as supported.
 
@@ -273,31 +273,31 @@ Only then specify process orchestration. Manual mode continues to use pH's exist
 
 Wrapper location, reuse, maintenance, and generation are partly independent choices.
 
-| Choice | When it fits |
-| --- | --- |
-| Raw genType | Existing shapes already serve consumers. |
-| Inline handwritten exports | A small module benefits from colocated public conversions. |
-| Separate handwritten RS boundary | Keep domain and public representation concerns separate. Useful for isolated adapter fixtures; optional for pH's clipboard record. |
-| Shared helper library | Reduce repeated conversions in either handwritten arrangement. Potential stopping point. |
-| Thin TS facade | TS or framework-specific integration adds value. |
-| Human/agent-maintained wrappers | Maintain explicit boundaries without a dedicated generator. |
-| Attributes plus type-driven generation | Repetition justifies tooling, and feasibility gates pass. Preferred automation candidate. |
-| Separate small FFI DSL | Only if attributes/conventions cannot express necessary policy. |
-| ReScript-derived source language | Only if ordinary ReScript becomes a demonstrated limitation; brings parser/editor maintenance. |
-| PPX/compiler AST extension | Possible compiler-coupled implementation after feasibility research. |
-| Native compiler/genType integration | Revisit after practical use establishes a stable model worth upstreaming. |
+| Choice                                 | When it fits                                                                                                                       |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Raw genType                            | Existing shapes already serve consumers.                                                                                           |
+| Inline handwritten exports             | A small module benefits from colocated public conversions.                                                                         |
+| Separate handwritten RS boundary       | Keep domain and public representation concerns separate. Useful for isolated adapter fixtures; optional for pH's clipboard record. |
+| Shared helper library                  | Reduce repeated conversions in either handwritten arrangement. Potential stopping point.                                           |
+| Thin TS facade                         | TS or framework-specific integration adds value.                                                                                   |
+| Human/agent-maintained wrappers        | Maintain explicit boundaries without a dedicated generator.                                                                        |
+| Attributes plus type-driven generation | Repetition justifies tooling, and feasibility gates pass. Preferred automation candidate.                                          |
+| Separate small FFI DSL                 | Only if attributes/conventions cannot express necessary policy.                                                                    |
+| ReScript-derived source language       | Only if ordinary ReScript becomes a demonstrated limitation; brings parser/editor maintenance.                                     |
+| PPX/compiler AST extension             | Possible compiler-coupled implementation after feasibility research.                                                               |
+| Native compiler/genType integration    | Revisit after practical use establishes a stable model worth upstreaming.                                                          |
 
 ## Remaining decisions and revisit triggers
 
-| Question | Current position | Revisit when |
-| --- | --- | --- |
-| Exact ReScript envelope/helper encoding | Prove the smallest definitions with correct genType output. | First manual spike. |
-| Presence type parameter | Use `Option<T>` with `Some<T>`/`None` aliases. | A real generic API benefits from parameterized presence. |
-| Additional defaults and generic support | Support only cases whose conversion can be established; use custom boundaries otherwise. | Repeated concrete use demonstrates a worthwhile addition. |
-| Wellcrafted divergence | Aim for structural compatibility without a consumer dependency. | A concrete semantic or DX benefit warrants an explicit alternate policy. |
-| Rich-content renderer and sanitizer policy | Small optional integration, approved APIs, developer discipline. | Content milestone begins. |
-| Safe-function coloring | Deferred; value types and trusted constructors first. | Real failures show the trust contract is insufficient. |
-| Analyzer, attributes, config, build ordering | Deferred; generated ReScript is a candidate, not a commitment. | Manual repetition justifies automation. |
-| Package names and extraction | Mog is the settled project name. Exact package names remain provisional; keep descriptive filenames and a pH-local proof for now. | A reusable package is ready to extract. |
+| Question                                     | Current position                                                                                                                  | Revisit when                                                             |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Exact ReScript envelope/helper encoding      | Prove the smallest definitions with correct genType output.                                                                       | First manual spike.                                                      |
+| Presence type parameter                      | Use `Option<T>` with `Some<T>`/`None` aliases.                                                                                    | A real generic API benefits from parameterized presence.                 |
+| Additional defaults and generic support      | Support only cases whose conversion can be established; use custom boundaries otherwise.                                          | Repeated concrete use demonstrates a worthwhile addition.                |
+| Wellcrafted divergence                       | Aim for structural compatibility without a consumer dependency.                                                                   | A concrete semantic or DX benefit warrants an explicit alternate policy. |
+| Rich-content renderer and sanitizer policy   | Small optional integration, approved APIs, developer discipline.                                                                  | Content milestone begins.                                                |
+| Safe-function coloring                       | Deferred; value types and trusted constructors first.                                                                             | Real failures show the trust contract is insufficient.                   |
+| Analyzer, attributes, config, build ordering | Deferred; generated ReScript is a candidate, not a commitment.                                                                    | Manual repetition justifies automation.                                  |
+| Package names and extraction                 | Mog is the settled project name. Exact package names remain provisional; keep descriptive filenames and a pH-local proof for now. | A reusable package is ready to extract.                                  |
 
 Upstream comparisons and project evidence are collected in the companion's [references](rescript-ts-interop-what-why.md#references-and-related-projects).
