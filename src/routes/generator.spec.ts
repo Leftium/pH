@@ -45,9 +45,25 @@ describe('bookmarklet', () => {
 		}
 	);
 
-	it('prefers a bookmarklet address and shifts focus to the password', () => {
+	it('reduces a bookmarklet address to its password realm and shifts focus', () => {
 		expect(getInitialAddress('https://accounts.example.com/login', 'ph.leftium.com')).toEqual({
-			addressInput: 'https://accounts.example.com/login',
+			addressInput: 'example.com',
+			focusPassword: true
+		});
+	});
+
+	it('resolves compound suffixes in bookmarklet addresses', () => {
+		expect(
+			getInitialAddress('https://login.example.co.uk/account?tab=security', 'ph.leftium.com')
+		).toEqual({
+			addressInput: 'example.co.uk',
+			focusPassword: true
+		});
+	});
+
+	it('preserves an invalid bookmarklet address for validation', () => {
+		expect(getInitialAddress('http://', 'ph.leftium.com')).toEqual({
+			addressInput: 'http://',
 			focusPassword: true
 		});
 	});

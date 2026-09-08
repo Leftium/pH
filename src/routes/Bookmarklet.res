@@ -23,7 +23,11 @@ let decodeAddressFromHash = (hash: string): string =>
 @genType
 let getInitialAddress = (~addressFromHash: string, ~currentHostname: string): initialAddress =>
   if addressFromHash != "" {
-    {addressInput: addressFromHash, focusPassword: true}
+    let addressInput = switch Realm.resolve(addressFromHash) {
+    | Ok(realm) => realm
+    | Error(_) => addressFromHash
+    }
+    {addressInput, focusPassword: true}
   } else {
     let addressInput = switch Realm.resolve(currentHostname) {
     | Ok(_) => currentHostname
