@@ -66,7 +66,7 @@
 		<p>Generates theft-resistant passwords.</p>
 	</header>
 
-	<div class="generator-controls">
+	<form>
 		<label>
 			Site Address
 			<input
@@ -127,7 +127,7 @@
 		<button type="button" disabled={isCopyPending} onclick={() => void copyGeneratedPassword()}
 			>Copy</button
 		>
-	</div>
+	</form>
 
 	<footer>
 		<span class="bookmarklet">
@@ -162,11 +162,11 @@
 		font-family: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 	}
 
-	.generator-controls small {
+	form small {
 		min-height: 1.5rem;
 	}
 
-	.generator-controls > button {
+	form > button {
 		width: 100%;
 	}
 
