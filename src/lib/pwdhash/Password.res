@@ -1,12 +1,9 @@
-// Generates a PwdHash password, resolving a site address to its realm before calling the legacy algorithm.
-
-@module("./legacy/generateLegacyPassword.js")
-external generateLegacyPassword: (string, string) => string = "generateLegacyPassword"
+// Generates a PwdHash password, resolving a site address to its realm before calling PwdHash.
 
 type generationError = Realm.resolutionError
 
 let generateForRealm = (~realm: string, ~masterPassword: string): string =>
-  generateLegacyPassword(masterPassword, realm)
+  PwdHash.generate(~masterPassword, ~realm)
 
 @genType
 let generatePassword = (~addressInput: string, ~masterPassword: string): result<string, generationError> => {
