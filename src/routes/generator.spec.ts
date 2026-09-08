@@ -28,9 +28,9 @@ describe('bookmarklet', () => {
 		);
 	});
 
-	it('uses the current hostname for a normal load', () => {
+	it('reduces the current hostname to its password realm for a normal load', () => {
 		expect(getInitialAddress('', 'ph.leftium.com')).toEqual({
-			addressInput: 'ph.leftium.com',
+			addressInput: 'leftium.com',
 			focusPassword: false
 		});
 	});
@@ -99,6 +99,12 @@ describe('confirmation', () => {
 });
 
 describe('form presentation', () => {
+	it('labels the resolved site address as the password realm', () => {
+		expect(getFormView('https://accounts.example.com/login', '', false)).toMatchObject({
+			addressMessage: { text: 'Realm: example.com', role: undefined }
+		});
+	});
+
 	it('only reveals a missing password after submission', () => {
 		expect(getFormView('example.com', '', false)).toMatchObject({
 			generatedPassword: undefined,

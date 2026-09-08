@@ -24,7 +24,7 @@ let getFormView = (~addressInput: string, ~masterPassword: string, ~hasSubmitted
   let addressMessage = switch realm {
   | Error(MissingAddress) if showValidationErrors => {text: "Enter a site address.", role: Some("alert")}
   | Error(InvalidAddress) if showValidationErrors => {text: "Enter a valid site address.", role: Some("alert")}
-  | Ok(value) => {text: `Domain: ${value}`, role: None}
+  | Ok(value) => {text: `Realm: ${value}`, role: None}
   | _ => {text: "Enter a site address.", role: None}
   }
   let passwordMessage = if hasSubmitted && masterPassword == "" {

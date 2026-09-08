@@ -30,7 +30,7 @@ let getInitialAddress = (~addressFromHash: string, ~currentHostname: string): in
     {addressInput, focusPassword: true}
   } else {
     let addressInput = switch Realm.resolve(currentHostname) {
-    | Ok(_) => currentHostname
+    | Ok(realm) => realm
     | Error(_) => "example.com"
     }
     {addressInput, focusPassword: false}
