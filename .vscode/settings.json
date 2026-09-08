@@ -1,0 +1,6 @@
+{
+	"files.exclude": {
+		"**/*.res.js": true,
+		"**/*.gen.tsx": true
+	}
+}
