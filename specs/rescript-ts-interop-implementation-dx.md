@@ -1,10 +1,10 @@
-# ReScript and TypeScript interop: implementation and DX
+# Mog: ReScript and TypeScript interop, implementation and DX
 
 **Status:** Draft implementation plan; manual proof first, automation deferred.
-**Project name:** Undecided. Existing filenames are descriptive placeholders.
-**Companion:** [What and why](rescript-ts-interop-what-why.md) defines the public representations and semantic requirements.
+**Project name:** Mog. Package names, attribute spelling, and generated ReScript wrapper names remain provisional; spec filenames remain descriptive.
+**Companion:** [What and why](rescript-ts-interop-what-why.md) defines the public representations, semantic requirements, and [naming vocabulary](rescript-ts-interop-what-why.md#naming-and-terminology).
 
-Build a small ReScript helper library and handwritten public boundaries before deciding whether type-driven generation is worth maintaining. A manual implementation may be the stopping point.
+Build Mog as a small ReScript helper library and handwritten public boundaries that compose adapters to transmute values. Decide whether type-driven generation is worth maintaining after that proof. A manual implementation may be the stopping point.
 
 pH currently consumes raw genType exports. The first change should add an isolated boundary and concrete consumers while keeping that baseline available for comparison. Completion requires runtime semantics and emitted TS contracts to agree, including nested Option/Result payloads and inbound conversion. This document is a plan, not a claim that the sample helper APIs already compile.
 
@@ -24,6 +24,8 @@ For pH, use a separate `ClipboardInterop.res` during the proof so the existing c
 
 Use `Foo.res.interop.ts` only when a TS facade adds value, such as a TS-specific brand, schema integration, or framework wrapper. Do not require both RS and TS wrapper files.
 
+Keep `interop` as the file-purpose descriptor; adopting Mog does not rename the facade to `Foo.res.mog.ts`. Package names should follow the Mog brand when extraction needs them, but no package layout or exact names are selected yet.
+
 New managed boundaries adopt the [Option and Result contracts](rescript-ts-interop-what-why.md#public-representations). Raw `@genType` exports retain their existing shapes. Changing an import to a managed boundary can change nested fields and argument types, even if the function name stays the same.
 
 Do not treat all existing `@genType` exports as managed by default. Public raw exports may coexist during an experiment; generated helpers and internal adapter symbols must not accidentally become the intended package API.
@@ -38,7 +40,7 @@ Do not change project-wide compiler settings or introduce a new package structur
 
 ## Helper model
 
-Use `Adapter`, `toTS`, and `toRS` consistently in the design. Exact ReScript signatures are an implementation spike; TS-like notation here describes capabilities rather than prescribing a heterogeneous ReScript record API.
+Use `Adapter`, `toTS`, and `toRS` consistently in the design. Exact ReScript signatures and language-appropriate spelling are an implementation spike; TS-like notation here describes capabilities rather than prescribing a heterogeneous ReScript record API. Use destination-based direction names in conceptual examples; avoid mixing `toRS` with `fromTs` or calling the operations encode/decode.
 
 ```text
 identity
@@ -208,7 +210,7 @@ Add attributes only when there is a concrete consumer for the metadata or an exp
 
 ### Metadata and discovery
 
-Potential `@ffi`-style metadata would mark raw exports for adaptation, select a non-default representation, associate a custom adapter, or rename a public export. Names and syntax are provisional and must be verified with the pinned compiler and formatter. Do not duplicate full type expressions in attributes.
+Potential `@mog`-style metadata would mark raw exports for adaptation, select a non-default representation, associate a custom adapter, or rename a public export. Use `@mog` for brevity in concrete examples, with exact spelling explicitly TBD. `@transmute` remains an alternative: `@mog` is short and branded, while `@transmute` names the operation. Names and syntax are provisional and must be verified with the pinned compiler and formatter. Do not duplicate full type expressions in attributes.
 
 Prefer explicit module-local associations over project configuration. Configuration may later handle external adapters or project-wide policy. If several policies can apply, define deterministic precedence and reject ambiguous registrations.
 
@@ -272,6 +274,6 @@ Wrapper location, reuse, maintenance, and generation are partly independent choi
 | Rich-content renderer and sanitizer policy | Small optional integration, approved APIs, developer discipline. | Content milestone begins. |
 | Safe-function coloring | Deferred; value types and trusted constructors first. | Real failures show the trust contract is insufficient. |
 | Analyzer, attributes, config, build ordering | Deferred; generated ReScript is a candidate, not a commitment. | Manual repetition justifies automation. |
-| Product/package name and extraction | Keep descriptive filenames and a pH-local proof for now. | A reusable package is ready to extract. |
+| Package names and extraction | Mog is the settled project name. Exact package names remain provisional; keep descriptive filenames and a pH-local proof for now. | A reusable package is ready to extract. |
 
 Upstream comparisons and project evidence are collected in the companion's [references](rescript-ts-interop-what-why.md#references-and-related-projects).

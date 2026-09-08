@@ -1,18 +1,37 @@
-# ReScript and TypeScript interop: what and why
+# Mog: ReScript and TypeScript interop, what and why
 
 **Status:** Draft; representation decisions agreed, implementation not started.
-**Project name:** Undecided. This is a separate project incubating alongside pH.
+**Project name:** Mog. This is a separate project incubating alongside pH; package names remain provisional.
 **First milestone:** A manual ReScript helper/boundary proof, potentially in pH.
 
-Expose ReScript APIs through explicit, typed TypeScript boundaries that preserve their meaning while using predictable public representations.
+Mog provides idiomatic ReScript <-> TypeScript interop. It transmutes values across the language boundary by composing adapters, preserving their meaning while using predictable public representations.
 
-Today, pH consumes genType exports directly. The proposed layer adds reusable conversions where a different public representation is useful. The first proof succeeds when a handwritten boundary handles nested options/results, custom types, and required conversion directions without compiler-tag handling at application call sites. Code generation and rich-content authoring are later, independent milestones.
+Today, pH consumes genType exports directly. Mog adds reusable conversions where a different public representation is useful. The first proof succeeds when a handwritten boundary handles nested options/results, custom types, and required conversion directions without compiler-tag handling at application call sites. Code generation and rich-content authoring are later, independent milestones.
 
 This document owns the representation contracts and scope. The companion [implementation and DX spec](rescript-ts-interop-implementation-dx.md) owns the manual workflow, implementation sequence, and automation investigation. TypeScript definitions below describe intended public contracts; they are not generated output verified by an implementation yet.
 
+## Naming and terminology
+
+Mog is short for transmogrify/transmog. Use Mog as the project, tool, or library name, and `transmute` as the process verb. Avoid `mog`, `mogged`, or `mogging` as technical verbs.
+
+| Concept | Preferred term |
+| --- | --- |
+| Project/tool/library | Mog |
+| Representation-conversion process | transmute / transmutation |
+| Reusable conversion rule for a type or semantic representation | adapter |
+| RS-to-TS direction | `toTS` |
+| TS-to-RS direction | `toRS` |
+| Place adapters are applied | boundary |
+| Overall category | interop / FFI |
+| SvelteKit server/client serialization | transport |
+
+A Mog boundary may be handwritten, generated, attribute-driven, or framework-specific. Adapters perform transmutation at that boundary; they are not a separate stage before transmutation. Ordinary "convert/conversion" remains useful explanatory wording. Avoid codec, converter, mapper, or transmuter as competing names for adapters, and encode/decode or marshal/unmarshal as names for the core directional operations.
+
+Adapters do not establish validation or rendering safety. Mog composes with genType, Svelte rendering, and SvelteKit transport; each retains its own responsibility. Package names, attribute spelling, and generated ReScript wrapper names remain provisional. The companion's [implementation and DX spec](rescript-ts-interop-implementation-dx.md) records those choices.
+
 ## Motivation and current evidence
 
-ReScript and TypeScript exchange live JavaScript values. The core problem is representation conversion, not serialization. genType already provides useful types for many shared representations; the new layer should build on that baseline.
+ReScript and TypeScript exchange live JavaScript values. Mog transmutation changes their representation or ecosystem-facing shape; it does not serialize them. genType already provides useful types for many shared representations; Mog builds on that baseline.
 
 Three pH boundaries illustrate different needs:
 
@@ -156,13 +175,13 @@ type ToRS<RS, TS> = { toRS(value: TS): RS };
 type Adapter<RS, TS> = ToTS<RS, TS> & ToRS<RS, TS>;
 ```
 
-An outbound-only adapter is valid until a boundary needs its inbound capability. These TS signatures explain the model; ReScript helper signatures remain to be proven.
+An outbound-only adapter is valid until a boundary needs its inbound capability. `Adapter` above illustrates the bidirectional combination, not a requirement that every adapter supply both methods. These TS signatures explain the model; exact ReScript helper signatures and spelling remain to be proven.
 
 ```text
-TS argument -> toRS -> RS function -> toTS -> TS result
+TS argument -> toRS adapter -> RS function -> toTS adapter -> TS result
 
 Callback supplied by TS:
-RS argument -> toTS -> TS callback -> toRS -> RS caller
+RS argument -> toTS adapter -> TS callback -> toRS adapter -> RS caller
 ```
 
 An input position can therefore need `toTS` inside a callback. Determine requirements recursively from function positions, not just from whether a type occurs in a top-level argument or result.
@@ -187,7 +206,7 @@ Untrusted input follows this path:
 external input
   -> validation or decoding
   -> typed public value
-  -> representation conversion
+  -> Mog transmutation (toRS adapter)
   -> domain operation
 ```
 
@@ -230,6 +249,16 @@ Function "coloring" is a deferred idea: an annotation could mean that a function
 Svelte owns reactivity, lifecycle, bindings, and component composition. ReScript-derived calculations remain ordinary functions. A small `RichText` component can consume `SafeHast`; an optional local snippet adapter must not become the shared representation.
 
 SvelteKit handlers can consume an interop API and expose it through native remote functions. Transport is a separate contract: safe rendering does not guarantee serializability, and arbitrary HAST extensions need not be transportable. A remote integration must define and verify its transportable subset.
+
+When both operations are needed, they occur in sequence:
+
+```text
+ReScript value
+  -> Mog transmutation (toTS adapter)
+  -> TypeScript-friendly value
+  -> SvelteKit transport (server/client serialization)
+  -> browser
+```
 
 pH currently uses static deployment and prerendering. Runtime remote-function experiments belong in a separate server-capable fixture, not in pH's manual proof. Do not add devalue to the core merely because Kit uses it.
 
