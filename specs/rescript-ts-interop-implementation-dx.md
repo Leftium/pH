@@ -97,7 +97,7 @@ The public consumer then has this target shape:
 async function displayLookup(id: string) {
 	const result = await lookup(id);
 
-	if (result.error !== null) {
+	if (!result.ok) {
 		showError(result.error);
 	} else if (result.data.hasValue) {
 		showUser(result.data.value);
@@ -164,7 +164,7 @@ Keep clipboard exception handling in the existing domain operation. The adapter 
 
 ### Dedicated bidirectional Result fixture
 
-In this fixture, `CopyError` is the public literal type `"CopyFailed"`, and `Result` is the companion spec's structural envelope. Retain the old two-function flow: an operation returns managed `Result<undefined, CopyError>`, and a second operation accepts that same public Result. Wrap both directions so the second operation receives a converted RS Result. The TS consumer must also inspect `error !== null` and use both branches to demonstrate branch narrowing independently of the production page. Use injected resolving/rejecting writers, without a system clipboard or production page dependency.
+In this fixture, `CopyError` is the public literal type `"CopyFailed"`, and `Result` is the companion spec's explicit-discriminant envelope. Retain the old two-function flow: an operation returns managed `Result<undefined, CopyError>`, and a second operation accepts that same public Result. Wrap both directions so the second operation receives a converted RS Result. The TS consumer must inspect `ok` and use both branches to demonstrate branch narrowing independently of the production page. Use injected resolving/rejecting writers, without a system clipboard or production page dependency.
 
 This fixture proves conversion and composition. It is not the recommended pH API or evidence that pH needs to expose a Result. The success payload remains `undefined`, matching the unit-payload contract.
 
@@ -189,8 +189,7 @@ Verify consequences, not an exhaustive inventory of hypothetical features. The m
 | Concern                      | Evidence                                                                                                                                                                                         |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Option state preservation    | Both directions distinguish `None`, `Some(None)`, deeper nesting, and supported `Some(null)`/`Some(undefined)` payloads.                                                                         |
-| Result compatibility         | Success/error branches, nested payloads, and TS assignability against a pinned Wellcrafted type in development; consumers need no Wellcrafted dependency.                                        |
-| Invalid default Result error | A nullable public error type requires an explicit adapter or is rejected. Falsy non-null errors remain errors.                                                                                   |
+| Result state preservation   | Success/error branches, nested payloads, and nullable or falsy payloads all retain their branch through the `ok` discriminant. Consumers need no Wellcrafted dependency.                        |
 | Composition                  | A custom leaf conversion is actually used inside a containing value in each required direction.                                                                                                  |
 | Functions and promises       | Callback directions are correct; thrown exceptions and rejections are not swallowed; conversion failures follow the declared contract.                                                           |
 | Public type accuracy         | Generated TS supports narrowing and rejects incorrect calls without application casts masking mismatches.                                                                                        |
@@ -294,7 +293,7 @@ Wrapper location, reuse, maintenance, and generation are partly independent choi
 | Exact ReScript envelope/helper encoding      | Prove the smallest definitions with correct genType output.                                                                       | First manual spike.                                                      |
 | Presence type parameter                      | Use `Option<T>` with `Some<T>`/`None` aliases.                                                                                    | A real generic API benefits from parameterized presence.                 |
 | Additional defaults and generic support      | Support only cases whose conversion can be established; use custom boundaries otherwise.                                          | Repeated concrete use demonstrates a worthwhile addition.                |
-| Wellcrafted divergence                       | Aim for structural compatibility without a consumer dependency.                                                                   | A concrete semantic or DX benefit warrants an explicit alternate policy. |
+| Wellcrafted distinction                      | Preserve the familiar `data` and `error` fields, but make Mog's `ok` discriminant authoritative; exact structural compatibility is not required. | A concrete semantic or DX benefit warrants an explicit alternate policy. |
 | Rich-content renderer and sanitizer policy   | Small optional integration, approved APIs, developer discipline.                                                                  | Content milestone begins.                                                |
 | Safe-function coloring                       | Deferred; value types and trusted constructors first.                                                                             | Real failures show the trust contract is insufficient.                   |
 | Analyzer, attributes, config, build ordering | Deferred; generated ReScript is a candidate, not a commitment.                                                                    | Manual repetition justifies automation.                                  |

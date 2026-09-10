@@ -70,7 +70,7 @@ Select Mog boundaries deliberately. A coherent operation returning an already er
 | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | Preserve every state of supported bidirectional values.                            | Silent flattening makes round trips unreliable. Reject unsupported representations instead.                                                   |
 | Use explicit Option envelopes by default on managed boundaries.                    | Presence remains distinct from the payload, including nested absence, `null`, and `undefined`.                                                |
-| Aim for structural Wellcrafted Result compatibility.                               | Consumers can use plain objects without installing Wellcrafted. Divergence requires a concrete benefit and an explicit policy.                |
+| Use explicit discriminants for managed Option and Result envelopes.                | `hasValue` determines Option presence and `ok` determines Result success or failure; payloads never determine the branch.                    |
 | Cover a small core and compose custom adapters.                                    | Edge cases should not force the core to model the entire language.                                                                            |
 | Support both directions, prioritize RS-to-TS ergonomics and conversion efficiency. | Rich output/view values motivate the primary architecture; arguments and callbacks still require first-class inbound conversion where needed. |
 | Minimize crossings of intermediate domain values.                                  | Coherent RS operations keep values internal when TS has no use for them.                                                                      |
@@ -79,7 +79,7 @@ Select Mog boundaries deliberately. A coherent operation returning an already er
 | Prove manual use before adding metadata or code generation.                        | Automation must address observed repetition.                                                                                                  |
 | Keep rich content and framework glue optional.                                     | The core must work without HAST, Svelte, or SvelteKit.                                                                                        |
 
-In scope for the manual proof: primitives, unit, explicit options, compatible results, arrays, tuples, immutable record usage, promises, suitable variants, and explicit custom adapters. Include a callback composition fixture to establish direction reversal.
+In scope for the manual proof: primitives, unit, explicit options, explicit-discriminant results, arrays, tuples, immutable record usage, promises, suitable variants, and explicit custom adapters. Include a callback composition fixture to establish direction reversal.
 
 Initially require explicit custom boundaries for cases whose conversion cannot be established: unresolved representation-changing generics, recursive type derivation, cyclic values, mutation-sensitive graphs, unusual external objects, and unsupported language features. These are support limits, not claims that such types can never be handled.
 
@@ -95,7 +95,7 @@ type None = { readonly value: null; readonly hasValue: false };
 type Option<T> = Some<T> | None;
 ```
 
-Option uses `value`/`hasValue` for presence, while Result uses `data`/`error` for success or failure. The `hasValue` field is authoritative; never infer presence from `value`.
+Option uses `value`/`hasValue` for presence, while Result uses `ok`/`data`/`error` for success or failure. `hasValue` is authoritative for Option presence; never infer presence from `value`.
 
 ```ts
 // None
@@ -129,13 +129,34 @@ This changes only the type spelling. Start with the simpler union and branch ali
 ### Result
 
 ```ts
-type Result<T, E> =
-	{ readonly data: T; readonly error: null } | { readonly data: null; readonly error: E };
+type Ok<T> = {
+	readonly ok: true;
+	readonly data: T;
+	readonly error: null;
+};
+
+type Err<E> = {
+	readonly ok: false;
+	readonly data: null;
+	readonly error: E;
+};
+
+type Result<T, E> = Ok<T> | Err<E>;
 ```
 
-Use Wellcrafted's structural envelope without requiring its runtime or type imports in consumer projects. Both branches recursively convert their payloads. The default adapter requires the public error type to exclude `null`, because `null` identifies success. Check `error !== null`, not truthiness.
+`ok` is authoritative. Determine the Result branch from `ok`, never from `data`, `error`, or truthiness. Both branches recursively convert their payloads, including nullable and falsy error payloads. A Mog Result retains the familiar `data` and `error` fields but does not require exact bidirectional structural compatibility with Wellcrafted.
 
-An error type whose public representation can contain `null` needs an explicit adapter, for example an object with `{ name: "DomainError", value: originalPayload }`. Preserve the payload; do not silently reinterpret an error as success. Unsupported error representations must be reported rather than guessed.
+```ts
+const { ok, data, error } = result;
+
+if (!ok) {
+	showError(error); // E
+} else {
+	use(data); // T
+}
+```
+
+The explicit discriminant preserves every valid `result<'a, 'e>` state without adapting nullable error payloads. Unsupported representations must still be reported rather than guessed.
 
 Nested results and options retain each envelope:
 
@@ -158,7 +179,7 @@ Here, `T'` means the public representation selected for `T`.
 | `string`, `bool`, `int`, `float` | `string`, `boolean`, `number`                         | Identity at the representation level. Static TS `number` does not validate ReScript numeric or domain assumptions. |
 | `unit`                           | `void` for function returns; `undefined` as a payload | Preserve unit when nested in an envelope.                                                                          |
 | `option<T>`                      | `Option<T'>`                                          | Convert the present payload; preserve every absence layer.                                                         |
-| `result<T, E>`                   | `Result<T', E'>`                                      | Convert the selected branch; require a non-null public error representation.                                       |
+| `result<T, E>`                   | `Result<T', E'>`                                      | Convert the selected branch and preserve every payload value; `ok` identifies the branch.                          |
 | `array<T>`                       | `Array<T'>`                                           | Compose the child adapter; identity only when compatible.                                                          |
 | Tuple                            | TS tuple                                              | Compose each position.                                                                                             |
 | Record                           | Object with declared public fields                    | Compose each field; preserve field presence and declared mutability constraints.                                   |
@@ -321,7 +342,7 @@ The later content milestone succeeds when ReScript-authored rich text can render
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | [ReScript TypeScript integration / genType](https://rescript-lang.org/docs/manual/typescript-integration/)                                                      | Baseline public types and existing representation support. Verify against the pinned compiler.             |
 | [ReScript options](https://rescript-lang.org/docs/manual/null-undefined-option/)                                                                                | Source semantics; nested absence must survive conversion.                                                  |
-| [Wellcrafted](https://github.com/wellcrafted-dev/wellcrafted)                                                                                                   | Structural Result and tagged-error conventions, without a required consumer dependency.                    |
+| [Wellcrafted](https://github.com/wellcrafted-dev/wellcrafted)                                                                                                   | Result-envelope and tagged-error conventions to compare, without a consumer dependency or exact structural-compatibility requirement. |
 | [Sury, formerly ReScript Schema](https://github.com/DZakh/sury)                                                                                                 | Existing schema, transformation, and serialization approach to compare before adding validation machinery. |
 | [ReScript generic JSX](https://rescript-lang.org/docs/manual/jsx/#generic-jsx-transform-jsx-beyond-react-experimental) and [ResX](https://github.com/zth/res-x) | Runtime requirements and an existing use of JSX outside React.                                             |
 | [HAST](https://github.com/syntax-tree/hast), [MDAST](https://github.com/syntax-tree/mdast), and [rehype-sanitize](https://github.com/rehypejs/rehype-sanitize)  | Shared formats and sanitization policy.                                                                    |
