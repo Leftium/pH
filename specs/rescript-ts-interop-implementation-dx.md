@@ -95,19 +95,19 @@ The public consumer then has this target shape:
 
 ```ts
 async function displayLookup(id: string) {
-	const result = await lookup(id);
+	const { ok, data, error } = await lookup(id);
 
-	if (!result.ok) {
-		showError(result.error);
-	} else if (result.data.hasValue) {
-		showUser(result.data.value);
+	if (!ok) {
+		showError(error);
+	} else if (data.hasValue) {
+		showUser(data.value);
 	} else {
 		showNotFound();
 	}
 }
 ```
 
-`lookup` and the display functions are illustrative. The proof must include a real TS consumer using generated declarations, with no application-level casts added to force agreement.
+`lookup` and the display functions are illustrative. The destructured `ok`, `data`, and `error` fields must retain their branch relationship for TS narrowing. The proof must include a real TS consumer using generated declarations, with no application-level casts added to force agreement.
 
 ## Manual pH experiment
 

@@ -146,14 +146,28 @@ type Result<T, E> = Ok<T> | Err<E>;
 
 `ok` is authoritative. Determine the Result branch from `ok`, never from `data`, `error`, or truthiness. Both branches recursively convert their payloads, including nullable and falsy error payloads. A Mog Result retains the familiar `data` and `error` fields but does not require exact bidirectional structural compatibility with Wellcrafted.
 
+For immediate consumption, destructure the Result directly from the call. This preserves Wellcrafted-like `const { data, error } = await operation()` ergonomics while adding only the authoritative `ok` discriminant:
+
 ```ts
-const { ok, data, error } = result;
+const { ok, data, error } = await operation();
 
 if (!ok) {
 	showError(error); // E
 } else {
 	use(data); // T
 }
+```
+
+For a longer-lived Result, keep it intact and branch on `result.ok`:
+
+```ts
+const result = await operation();
+
+if (!result.ok) {
+	return handleError(result.error);
+}
+
+use(result.data);
 ```
 
 The explicit discriminant preserves every valid `result<'a, 'e>` state without adapting nullable error payloads. Unsupported representations must still be reported rather than guessed.
