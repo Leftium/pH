@@ -1,10 +1,12 @@
 // Derives password-generation and validation data for the Svelte form from the current inputs.
 
+@live
 type formMessage = {
   text: string,
   role: option<string>,
 }
 
+@live
 type formView = {
   generatedPassword: option<string>,
   addressMessage: formMessage,

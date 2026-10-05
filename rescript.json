@@ -1,5 +1,11 @@
 {
 	"name": "ph",
+	"reanalyze": {
+		"analysis": ["dce"],
+		"suppress": [],
+		"unsuppress": [],
+		"transitive": false
+	},
 	"sources": [
 		{
 			"dir": "src",

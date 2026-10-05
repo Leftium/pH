@@ -4,7 +4,7 @@ type resolutionError =
   | MissingAddress
   | InvalidAddress
 
-type parseOptions = {detectSpecialUse: bool}
+type parseOptions = {@live detectSpecialUse: bool}
 
 type parsedAddress = {
   domain: Nullable.t<string>,

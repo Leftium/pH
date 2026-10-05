@@ -3,6 +3,7 @@
 @val external decodeUriComponent: string => string = "decodeURIComponent"
 @val external jsonStringify: string => string = "JSON.stringify"
 
+@live
 type initialAddress = {
   addressInput: string,
   focusPassword: bool,
