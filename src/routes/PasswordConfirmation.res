@@ -6,6 +6,7 @@ type confirmationState =
   | ExactMatch
   | Mismatch
 
+@live
 type confirmationView = {
   className: string,
   message: option<string>,
