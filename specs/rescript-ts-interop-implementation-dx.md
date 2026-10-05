@@ -186,15 +186,15 @@ These fixtures should prove the shared contract without adding unrelated feature
 
 Verify consequences, not an exhaustive inventory of hypothetical features. The manual proof needs:
 
-| Concern                      | Evidence                                                                                                                                                                                         |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Option state preservation    | Both directions distinguish `None`, `Some(None)`, deeper nesting, and supported `Some(null)`/`Some(undefined)` payloads.                                                                         |
-| Result state preservation   | Success/error branches, nested payloads, and nullable or falsy payloads all retain their branch through the `ok` discriminant. Consumers need no Wellcrafted dependency.                        |
-| Composition                  | A custom leaf conversion is actually used inside a containing value in each required direction.                                                                                                  |
-| Functions and promises       | Callback directions are correct; thrown exceptions and rejections are not swallowed; conversion failures follow the declared contract.                                                           |
-| Public type accuracy         | Generated TS supports narrowing and rejects incorrect calls without application casts masking mismatches.                                                                                        |
-| pH behavior                  | Success/failure wording and masking remain correct; the password is separately styleable, with no Result round trip, and validation still precedes writing. Existing comparison APIs still work. |
-| Capability failures          | Missing conversion directions and unsupported defaults fail clearly. In manual mode, compiler errors or an explicit support gate may supply this evidence.                                       |
+| Concern                   | Evidence                                                                                                                                                                                         |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Option state preservation | Both directions distinguish `None`, `Some(None)`, deeper nesting, and supported `Some(null)`/`Some(undefined)` payloads.                                                                         |
+| Result state preservation | Success/error branches, nested payloads, and nullable or falsy payloads all retain their branch through the `ok` discriminant. Consumers need no Wellcrafted dependency.                         |
+| Composition               | A custom leaf conversion is actually used inside a containing value in each required direction.                                                                                                  |
+| Functions and promises    | Callback directions are correct; thrown exceptions and rejections are not swallowed; conversion failures follow the declared contract.                                                           |
+| Public type accuracy      | Generated TS supports narrowing and rejects incorrect calls without application casts masking mismatches.                                                                                        |
+| pH behavior               | Success/failure wording and masking remain correct; the password is separately styleable, with no Result round trip, and validation still precedes writing. Existing comparison APIs still work. |
+| Capability failures       | Missing conversion directions and unsupported defaults fail clearly. In manual mode, compiler errors or an explicit support gate may supply this evidence.                                       |
 
 Do not promise automated unsupported-type detection before the analyzer exists. Manual authors must use supported helpers or explicit custom boundaries; the compiler checks their signatures, while semantic adapter laws require focused tests/review. Future generation must refuse types it cannot establish as supported.
 
@@ -288,15 +288,15 @@ Wrapper location, reuse, maintenance, and generation are partly independent choi
 
 ## Remaining decisions and revisit triggers
 
-| Question                                     | Current position                                                                                                                  | Revisit when                                                             |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Exact ReScript envelope/helper encoding      | Prove the smallest definitions with correct genType output.                                                                       | First manual spike.                                                      |
-| Presence type parameter                      | Use `Option<T>` with `Some<T>`/`None` aliases.                                                                                    | A real generic API benefits from parameterized presence.                 |
-| Additional defaults and generic support      | Support only cases whose conversion can be established; use custom boundaries otherwise.                                          | Repeated concrete use demonstrates a worthwhile addition.                |
+| Question                                     | Current position                                                                                                                                 | Revisit when                                                             |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| Exact ReScript envelope/helper encoding      | Prove the smallest definitions with correct genType output.                                                                                      | First manual spike.                                                      |
+| Presence type parameter                      | Use `Option<T>` with `Some<T>`/`None` aliases.                                                                                                   | A real generic API benefits from parameterized presence.                 |
+| Additional defaults and generic support      | Support only cases whose conversion can be established; use custom boundaries otherwise.                                                         | Repeated concrete use demonstrates a worthwhile addition.                |
 | Wellcrafted distinction                      | Preserve the familiar `data` and `error` fields, but make Mog's `ok` discriminant authoritative; exact structural compatibility is not required. | A concrete semantic or DX benefit warrants an explicit alternate policy. |
-| Rich-content renderer and sanitizer policy   | Small optional integration, approved APIs, developer discipline.                                                                  | Content milestone begins.                                                |
-| Safe-function coloring                       | Deferred; value types and trusted constructors first.                                                                             | Real failures show the trust contract is insufficient.                   |
-| Analyzer, attributes, config, build ordering | Deferred; generated ReScript is a candidate, not a commitment.                                                                    | Manual repetition justifies automation.                                  |
-| Package names and extraction                 | Mog is the settled project name. Exact package names remain provisional; keep descriptive filenames and a pH-local proof for now. | A reusable package is ready to extract.                                  |
+| Rich-content renderer and sanitizer policy   | Small optional integration, approved APIs, developer discipline.                                                                                 | Content milestone begins.                                                |
+| Safe-function coloring                       | Deferred; value types and trusted constructors first.                                                                                            | Real failures show the trust contract is insufficient.                   |
+| Analyzer, attributes, config, build ordering | Deferred; generated ReScript is a candidate, not a commitment.                                                                                   | Manual repetition justifies automation.                                  |
+| Package names and extraction                 | Mog is the settled project name. Exact package names remain provisional; keep descriptive filenames and a pH-local proof for now.                | A reusable package is ready to extract.                                  |
 
 Upstream comparisons and project evidence are collected in the companion's [references](rescript-ts-interop-what-why.md#references-and-related-projects).

@@ -23,18 +23,18 @@ let formatGeneratedPassword = (~generatedPassword: option<string>, ~reveal: bool
 
 ```ts
 export function formatGeneratedPassword(
-  generatedPassword: string | undefined,
-  reveal: boolean
+	generatedPassword: string | undefined,
+	reveal: boolean
 ): string {
-  if (generatedPassword === undefined) {
-    return '';
-  }
+	if (generatedPassword === undefined) {
+		return '';
+	}
 
-  if (reveal) {
-    return generatedPassword;
-  }
+	if (reveal) {
+		return generatedPassword;
+	}
 
-  return maskPassword(generatedPassword);
+	return maskPassword(generatedPassword);
 }
 ```
 
@@ -94,70 +94,66 @@ let getConfirmationView = (~masterPassword: string, ~confirmationInput: string):
 <summary>TypeScript equivalent</summary>
 
 ```ts
-type ConfirmationState =
-  | 'empty'
-  | 'matching-prefix'
-  | 'exact-match'
-  | 'mismatch';
+type ConfirmationState = 'empty' | 'matching-prefix' | 'exact-match' | 'mismatch';
 
 type ConfirmationView = {
-  className: string;
-  message?: string;
-  ariaInvalid?: boolean;
+	className: string;
+	message?: string;
+	ariaInvalid?: boolean;
 };
 
 function getConfirmationState(
-  masterPassword: string,
-  confirmationInput: string
+	masterPassword: string,
+	confirmationInput: string
 ): ConfirmationState {
-  if (confirmationInput === '') {
-    return 'empty';
-  } else if (confirmationInput === masterPassword) {
-    return 'exact-match';
-  } else if (masterPassword.startsWith(confirmationInput)) {
-    return 'matching-prefix';
-  } else {
-    return 'mismatch';
-  }
+	if (confirmationInput === '') {
+		return 'empty';
+	} else if (confirmationInput === masterPassword) {
+		return 'exact-match';
+	} else if (masterPassword.startsWith(confirmationInput)) {
+		return 'matching-prefix';
+	} else {
+		return 'mismatch';
+	}
 }
 
 function assertNever(value: never): never {
-  throw new Error(`Unhandled confirmation state: ${value}`);
+	throw new Error(`Unhandled confirmation state: ${value}`);
 }
 
 export function getConfirmationView(
-  masterPassword: string,
-  confirmationInput: string
+	masterPassword: string,
+	confirmationInput: string
 ): ConfirmationView {
-  const state = getConfirmationState(masterPassword, confirmationInput);
+	const state = getConfirmationState(masterPassword, confirmationInput);
 
-  switch (state) {
-    case 'empty':
-      return { className: 'neutral' };
+	switch (state) {
+		case 'empty':
+			return { className: 'neutral' };
 
-    case 'matching-prefix':
-      return {
-        className: 'matching-prefix',
-        message: 'Passwords match so far.'
-      };
+		case 'matching-prefix':
+			return {
+				className: 'matching-prefix',
+				message: 'Passwords match so far.'
+			};
 
-    case 'exact-match':
-      return {
-        className: 'exact-match',
-        message: 'Passwords match.',
-        ariaInvalid: false
-      };
+		case 'exact-match':
+			return {
+				className: 'exact-match',
+				message: 'Passwords match.',
+				ariaInvalid: false
+			};
 
-    case 'mismatch':
-      return {
-        className: 'mismatch',
-        message: 'Passwords do not match.',
-        ariaInvalid: true
-      };
+		case 'mismatch':
+			return {
+				className: 'mismatch',
+				message: 'Passwords do not match.',
+				ariaInvalid: true
+			};
 
-    default:
-      return assertNever(state);
-  }
+		default:
+			return assertNever(state);
+	}
 }
 ```
 
@@ -191,29 +187,27 @@ let generatePassword = (~addressInput: string, ~masterPassword: string): result<
 <summary>TypeScript equivalent</summary>
 
 ```ts
-type Result<T, E> =
-  | { data: T; error: null }
-  | { data: null; error: E };
+type Result<T, E> = { data: T; error: null } | { data: null; error: E };
 
 type GenerationError = ResolutionError;
 
 export function generatePassword(
-  addressInput: string,
-  masterPassword: string
+	addressInput: string,
+	masterPassword: string
 ): Result<string, GenerationError> {
-  const realm = resolve(addressInput);
+	const realm = resolve(addressInput);
 
-  if (realm.error !== null) {
-    return realm;
-  }
+	if (realm.error !== null) {
+		return realm;
+	}
 
-  return {
-    data: generateForRealm({
-      realm: realm.data,
-      masterPassword
-    }),
-    error: null
-  };
+	return {
+		data: generateForRealm({
+			realm: realm.data,
+			masterPassword
+		}),
+		error: null
+	};
 }
 ```
 
@@ -257,22 +251,15 @@ let generate = (~masterPassword: string, ~realm: string): string =>
 import { SPH_HashedPassword as LegacyHashedPassword } from './legacy/hashed-password.js';
 
 type HashedPassword = {
-  toString(): string;
+	toString(): string;
 };
 
-type HashedPasswordConstructor = new (
-  masterPassword: string,
-  realm: string
-) => HashedPassword;
+type HashedPasswordConstructor = new (masterPassword: string, realm: string) => HashedPassword;
 
-const SPH_HashedPassword =
-  LegacyHashedPassword as unknown as HashedPasswordConstructor;
+const SPH_HashedPassword = LegacyHashedPassword as unknown as HashedPasswordConstructor;
 
-export function generate(
-  masterPassword: string,
-  realm: string
-): string {
-  return new SPH_HashedPassword(masterPassword, realm).toString();
+export function generate(masterPassword: string, realm: string): string {
+	return new SPH_HashedPassword(masterPassword, realm).toString();
 }
 ```
 
@@ -326,48 +313,38 @@ let resolve = (addressInput: string): result<string, resolutionError> =>
 <summary>TypeScript equivalent</summary>
 
 ```ts
-type ResolutionError =
-  | 'MissingAddress'
-  | 'InvalidAddress';
+type ResolutionError = 'MissingAddress' | 'InvalidAddress';
 
-type Result<T, E> =
-  | { data: T; error: null }
-  | { data: null; error: E };
+type Result<T, E> = { data: T; error: null } | { data: null; error: E };
 
 function extractDomain(addressInput: string): string | undefined {
-  const parsedAddress = parseAddress(
-    normalizeAddress(addressInput.trim()),
-    { detectSpecialUse: true }
-  );
+	const parsedAddress = parseAddress(normalizeAddress(addressInput.trim()), {
+		detectSpecialUse: true
+	});
 
-  if (parsedAddress.domain !== null && parsedAddress.isIp) {
-    return undefined;
-  }
+	if (parsedAddress.domain !== null && parsedAddress.isIp) {
+		return undefined;
+	}
 
-  if (
-    parsedAddress.domain !== null &&
-    parsedAddress.publicSuffix === 'invalid'
-  ) {
-    return undefined;
-  }
+	if (parsedAddress.domain !== null && parsedAddress.publicSuffix === 'invalid') {
+		return undefined;
+	}
 
-  return parsedAddress.domain ?? undefined;
+	return parsedAddress.domain ?? undefined;
 }
 
-export function resolve(
-  addressInput: string
-): Result<string, ResolutionError> {
-  if (addressInput.trim() === '') {
-    return { data: null, error: 'MissingAddress' };
-  }
+export function resolve(addressInput: string): Result<string, ResolutionError> {
+	if (addressInput.trim() === '') {
+		return { data: null, error: 'MissingAddress' };
+	}
 
-  const domain = extractDomain(addressInput);
+	const domain = extractDomain(addressInput);
 
-  if (domain === undefined) {
-    return { data: null, error: 'InvalidAddress' };
-  }
+	if (domain === undefined) {
+		return { data: null, error: 'InvalidAddress' };
+	}
 
-  return { data: domain, error: null };
+	return { data: domain, error: null };
 }
 ```
 

@@ -63,14 +63,14 @@ PersistedAuth.assert(JSON.parseOrThrow(raw))
 TypeScript can get the same left-to-right appearance when APIs provide methods:
 
 ```ts
-text.trim().toLowerCase()
+text.trim().toLowerCase();
 ```
 
 But `JSON.parse` and `PersistedAuth.assert` are independent functions from unrelated modules. There is no natural method chain:
 
 ```ts
 // Not possible without introducing a wrapper API:
-raw.parse().assert()
+raw.parse().assert();
 ```
 
 In ReScript, `JSON.parseOrThrow` and `PersistedAuth.assert` remain ordinary functions in separate modules. The pipe changes how they are called, not how the APIs are organized.

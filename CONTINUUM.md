@@ -10,11 +10,13 @@ This repository uses the Continuum multi-agent workflow.
 ## Start here
 
 Humans:
+
 - Issues: https://github.com/Leftium/pH/issues
 - Pull requests: https://github.com/Leftium/pH/pulls
 - Milestones: https://github.com/Leftium/pH/milestones
 
 Agents:
+
 1. Read this file before coordinating or modifying work.
 2. Inspect open Continuum issues and pull requests.
 3. Treat current Git and GitHub state, together with tracked project policy, as authoritative over stale or private handoff prose.
@@ -79,6 +81,7 @@ A Continuum issue should describe the goal, relevant durable context and decisio
 Prefer issue comments for durable product and scope decisions, blockers, dependencies, and acceptance changes. Prefer PR comments for implementation checkpoints, commit IDs, verification, review findings, and handoffs for fixes. Link between them instead of repeating long handoffs. Do not copy live GitHub fields, such as Draft/Ready or review status, into tracked files or long-lived PR prose.
 
 When implementation begins:
+
 1. record the intended writer in the issue;
 2. create a fresh branch from the accepted base;
 3. create root `PR-PLAN.md` as the initial branch commit;
@@ -87,6 +90,7 @@ When implementation begins:
 6. release the lease before the writing turn yields or ends.
 
 When implementation finishes:
+
 1. verify the work;
 2. update the PR and issue with durable results;
 3. release any active write lease;
@@ -128,6 +132,7 @@ Handoffs should normally point the next agent to the issue, PR, root `PR-PLAN.md
 ## Recovery
 
 When returning after an absence:
+
 1. inspect open Continuum issues;
 2. inspect milestone grouping when an issue has one;
 3. identify blocked and ready work from issue relationships;
