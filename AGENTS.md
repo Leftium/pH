@@ -1,19 +1,17 @@
-<!-- leftium:continuum:start -->
-
-## Continuum
-
-This repository uses the Continuum multi-agent workflow.
-Read `CONTINUUM.md` before coordinating or modifying work.
-After acquiring the write lease on a Continuum Draft PR, the issue and `PR-PLAN.md` provide standing authorization to carry the planned implementation through all checkpoints where the harness accepts repository policy as approval.
-Run required formatting, tests, checks, builds, and plan-required package-manager commands without asking again. Commit and non-force-push each coherent checkpoint, then continue.
-A checkpoint is a savepoint, not a default handoff. Ask only for operations outside standing authorization or decisions that materially change scope. Project-specific and higher-precedence restrictions still apply.
-<!-- leftium:continuum:end -->
-
 ## Project Configuration
 
 - **Language**: TypeScript
 - **Package Manager**: pnpm
 - **Add-ons**: prettier, eslint, vitest, ai-tools
+
+## Project Workflow
+
+- `main` is the accepted integration branch and pull request target.
+- The user controls final merges.
+- For code changes, run `pnpm test`, `pnpm check`, and `pnpm lint`.
+- Changes to SvelteKit/Vite/build configuration, adapters, or dependency/toolchain boundaries also require `pnpm build`.
+- ReScript compilation is part of the existing package scripts; use repository scripts rather than bypassing that integration.
+- Keep framework migrations bounded; do not mix unrelated product or refactor work into them.
 
 ---
 
